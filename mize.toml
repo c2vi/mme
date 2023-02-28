@@ -1,0 +1,6 @@
+
+
+[[render]]
+id = "mmejs"
+main = "public/main.js"
+webroot = "src"
