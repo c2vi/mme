@@ -1,0 +1,30 @@
+{
+	"type": "render-view",
+	"view-version": 0,
+	"elements": [
+		{
+			"id": 0,
+			"type": "webcomponent",
+			"render-id": "#render/mize-mmejs-mainfolder",
+			"layout": {
+				"size-hint": 5
+			}
+		},
+		{
+			"id": 1,
+			"type": "webcomponent",
+			"render-id": "#render/mize-mmejs-topbar"
+		},
+		{
+			"id": 2,
+			"type": "v-split",
+			"layout": {
+				"top": 0,
+				"bottom": 0,
+				"right": 0,
+				"left": 0,
+				"children": [1,0]
+			}
+		}
+	]
+}
