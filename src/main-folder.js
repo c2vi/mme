@@ -1,7 +1,8 @@
-import FolderMain from './components/FolderMain.svelte'
+import FolderMain from './FolderMain.svelte'
 
+pr("in mainfolder.js file")
 customElements.define(
- 	"mize-mmejs-foldermain",
+ 	"mize-mmejs-mainfolder",
   class extends HTMLElement {
     constructor() {
       super()
@@ -23,8 +24,13 @@ customElements.define(
         },
       })
     }
+	  aaaaaaaaa(){
+		  pr("aaaaaaa")
+	  }
 	  getItemCallback(item){
-		  this.element.getItemCallback(item)
+		  pr("getItemCallback", item)
+		  pr("hl")
+		  //this.element.getItemCallback(item)
 	  }
 
     disconnectedCallback() {

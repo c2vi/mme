@@ -4,12 +4,14 @@ id = "mize-mmejs"
 type = "render-view"
 main = "public/main.json"
 
-[[webcomponent]]
+[[render]]
 id = "mize-mmejs-mainfolder"
+type = "webcomponent"
 main = "public/main-folder.js"
 webroot = "public"
 
-[[webcomponent]]
+[[render]]
 id = "mize-mmejs-topbar"
+type = "webcomponent"
 main = "public/top-bar.js"
 webroot = "public"
