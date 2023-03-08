@@ -1,6 +1,5 @@
-import FolderMain from './FolderMain.svelte'
+import FolderMain from './Link.svelte'
 
-pr("in mainfolder.js file")
 customElements.define(
  	"mize-mmejs-mainfolder",
   class extends HTMLElement {
@@ -8,30 +7,24 @@ customElements.define(
       super()
   
       // Create the shadow root.
-      const shadowRoot = this.attachShadow({ mode: 'open' })
+      this.shadow = this.attachShadow({ mode: 'open' })
+	 }
   
+	  getItemCallback(item){
       // Instantiate the Svelte Component
       this.element = new FolderMain({
         // Tell it that it lives in the shadow root
-        target: shadowRoot,
+        target: this.shadow,
 
         // Pass any props
         props: {
           // This is the place where you do any conversion between
           // the native string attributes and the types you expect
           // in your svelte components
-			  test: "testing props",
+			  item: item
         },
       })
     }
-	  aaaaaaaaa(){
-		  pr("aaaaaaa")
-	  }
-	  getItemCallback(item){
-		  pr("getItemCallback", item)
-		  pr("hl")
-		  //this.element.getItemCallback(item)
-	  }
 
     disconnectedCallback() {
       // Destroy the Svelte component when this web component gets
