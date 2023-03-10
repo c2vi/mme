@@ -5,26 +5,33 @@
 		{
 			"id": 0,
 			"type": "webcomponent",
-			"render-id": "#render/mize-mmejs-mainfolder",
-			"layout": {
-				"size-hint": 5
-			}
+			"render-id": "mize-mmejs-mainfolder"
 		},
 		{
 			"id": 1,
 			"type": "webcomponent",
-			"render-id": "#render/mize-mmejs-topbar"
+			"render-id": "mize-mmejs-topbar"
 		},
 		{
 			"id": 2,
 			"type": "v-split",
+			"children": [
+				{
+					"id": 1,
+					"layout": {
+						"prefered-size": 5
+					}
+				},
+				{
+					"id": 0
+				}
+			],
 			"layout": {
 				"absolut": true,
 				"top": 0,
 				"bottom": 0,
 				"right": 0,
-				"left": 0,
-				"children": [1,0]
+				"left": 0
 			}
 		}
 	]

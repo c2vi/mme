@@ -1,11 +1,12 @@
-import Link from './Link.svelte'
+import TopBar from './TopBar.svelte'
 
 customElements.define(
- 	"mize-mmejs-mainfolder",
+ 	"mize-mmejs-topbar",
   class extends HTMLElement {
     constructor() {
       super()
-		 this.aaaaaa = "hello testing"
+
+		 const webroot = "api/render/mize-mmejs-topbar/webroot"
   
       // Create the shadow root.
       this.shadow = this.attachShadow({ mode: 'open' })
@@ -13,7 +14,7 @@ customElements.define(
   
 	  getItemCallback(item){
       // Instantiate the Svelte Component
-      this.element = new Link({
+      this.element = new TopBar({
         // Tell it that it lives in the shadow root
         target: this.shadow,
 

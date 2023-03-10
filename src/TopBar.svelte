@@ -1,13 +1,10 @@
 <script>
+import TopBarEntry from "./components/TopBarEntry.svelte"
 	
-	export let name;
-
 </script>
 
 <main>
-	<h1>
-	Folder.svelte
-	</h1>
+	<TopBarEntry/>
 </main>
 
 <style>

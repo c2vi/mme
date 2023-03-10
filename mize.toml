@@ -1,17 +1,13 @@
 
 [[render]]
-id = "mize-mmejs"
-type = "render-view"
-main = "public/main.json"
+name = "mize-mmejs"
+json = "public/main.json"
 
-[[render]]
-id = "mize-mmejs-mainfolder"
-type = "webcomponent"
+[[webcomponent]]
+name = "mize-mmejs-mainfolder"
 main = "public/main-folder.js"
-webroot = "public"
 
-[[render]]
-id = "mize-mmejs-topbar"
-type = "webcomponent"
+[[webcomponent]]
+name = "mize-mmejs-topbar"
 main = "public/top-bar.js"
 webroot = "public"
