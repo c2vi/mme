@@ -6,3 +6,17 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+clap = { version = "4.5.8", features = ["cargo"] }
+colored = "2.1.0"
+cpp = "0.5.9"
+enum_dispatch = "0.3.13"
+slint = "1.6.0"
+slint-interpreter = "1.6.0"
+spin_on = "0.1.1"
+tao = "0.28.1"
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
+wry = "0.41.0"
+
+[build-dependencies]
+cc = "1.1.5"

@@ -2,6 +2,7 @@
 /public/build/
 
 .DS_Store
+/build
 
 
 # Added by cargo
