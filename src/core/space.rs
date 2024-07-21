@@ -6,13 +6,13 @@ use crate::error::MmeResult;
 // this is the main type of this project
 // a Widget represents any kind of "screen realestate"
 // be it a Webview, slint, Xwindow, ...
-pub struct Widget {
-    implementation: WidgetImplementor
+pub struct Space {
+    implementation: SpaceImplementor
 }
 
 // an enum over all of what types such "screen realestate" could have
 #[enum_dispatch]
-pub enum WidgetImplementor {
+pub enum SpaceImplementor {
     //Xwindow {},
     //WaylandWindow {},
     SlintWidget,
@@ -26,10 +26,10 @@ pub enum WidgetImplementor {
 
 // common behaviour for all Rendertypes
 #[enum_dispatch(WidgetImplementor)]
-pub trait WidgetTrait {
-    fn put_top(self, pos: Position, widget: Widget) -> MmeResult<()>;
+pub trait SpaceTrait {
+    fn put_top(self, pos: Position, widget: Space) -> MmeResult<()>;
 
-    fn put_top_full(self, widget: Widget) -> MmeResult<()>;
+    fn put_top_full(self, widget: Space) -> MmeResult<()>;
 }
 
 pub struct Position {

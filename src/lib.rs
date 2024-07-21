@@ -2,12 +2,12 @@
 #![ allow( warnings ) ]
 
 mod core {
-    pub mod widget;
+    pub mod space;
     pub mod mme;
     pub mod error;
 }
 
-pub use core::widget;
+pub use core::space;
 pub use core::mme;
 pub use core::error;
 

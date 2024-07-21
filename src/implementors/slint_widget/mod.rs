@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 use slint_interpreter::{ComponentInstance, ComponentDefinition, ComponentCompiler, Value, SharedString, ComponentHandle};
 
-use crate::widget::{Widget, WidgetImplementor, WidgetTrait, Position};
+use crate::space::{Space, SpaceImplementor, SpaceTrait, Position};
 use crate::error::MmeResult;
 
 
@@ -42,11 +42,11 @@ impl SlintWidget {
     }
 }
 
-impl WidgetTrait for SlintWidget {
-    fn put_top(self, pos: Position, widget: Widget) -> MmeResult<()> {
+impl SpaceTrait for SlintWidget {
+    fn put_top(self, pos: Position, widget: Space) -> MmeResult<()> {
         todo!()
     }
-    fn put_top_full(self, widget: Widget) -> MmeResult<()> {
+    fn put_top_full(self, widget: Space) -> MmeResult<()> {
         todo!()
     }
 }
