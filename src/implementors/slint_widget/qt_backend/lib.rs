@@ -8,6 +8,9 @@
 #![recursion_limit = "2048"]
 
 extern crate alloc;
+extern crate i_slint_core;
+extern crate const_field_offset;
+extern crate i_slint_core_macros;
 
 use i_slint_core::platform::PlatformError;
 use std::rc::Rc;
@@ -81,7 +84,7 @@ pub type NativeGlobals =
 #[cfg(no_qt)]
 mod native_style_metrics_stub {
     use const_field_offset::FieldOffsets;
-    use core::pin::Pin;
+    use std::pin::Pin;
     #[cfg(feature = "rtti")]
     use i_slint_core::rtti::*;
     use i_slint_core_macros::*;
