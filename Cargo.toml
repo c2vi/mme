@@ -5,18 +5,33 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[features]
+#default = [ "i-slint-backend-qt/cpp" ]
+
 [dependencies]
 clap = { version = "4.5.8", features = ["cargo"] }
 colored = "2.1.0"
 cpp = "0.5.9"
 enum_dispatch = "0.3.13"
-slint = "1.6.0"
-slint-interpreter = "1.6.0"
+#slint = { path = "gitignore/slint/api/rs/slint" }
+#i-slint-backend-qt = { path = "src/implementors/slint_widget/qt_backend" }
+#slint-interpreter = { path = "gitignore/slint/internal/interpreter" }
 spin_on = "0.1.1"
 tao = "0.28.1"
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 wry = "0.41.0"
+qt_gui = "0.5.0"
+qt_core = "0.5.0"
+qt_widgets = "0.5.0"
+slint = "1.7.1"
+slint-interpreter = "1.7.1"
+#qt_gui = "0.5.0"
+comandr = { path = "../dr-comandr" }
+i-slint-backend-qt = "1.7.1"
 
 [build-dependencies]
 cc = "1.1.5"
+
+[lib]
+crate-type =["cdylib", "rlib"]

@@ -61,6 +61,8 @@ in {
         pkg-config 
         patchelf
         webkitgtk_4_1
+        libsForQt5.full
+        cmake
         (fenix.packages.${system}.combine [ wasmToolchain osToolchain ])
         /*
         (fenix.packages.${system}.complete.withComponents [
@@ -89,7 +91,7 @@ in {
 
         # i found that this is the env war to set where QT looks for platform plugins
         # at: https://forums.fedoraforum.org/showthread.php?326508-How-to-set-QT_QPA_PLATFORM_PLUGIN_PATH
-        export QT_QPA_PLATFORM_PLUGIN_PATH=${pkgs.libsForQt5.full}/lib/qt-5.15.12/plugins/platforms/
+        export QT_QPA_PLATFORM_PLUGIN_PATH=${pkgs.libsForQt5.full}/lib/qt-5.15.14/plugins/platforms/
       '';
 
     };

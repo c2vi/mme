@@ -4,6 +4,7 @@ use std::path::PathBuf;
 use clap::{ArgAction, ArgMatches};
 use clap::{Arg, crate_version, Command};
 use cpp::cpp;
+use slint::ComponentHandle;
 
 use std::sync::Arc;
 use std::io::Write;
@@ -18,6 +19,9 @@ use mme::error::{MmeResult, MmeError};
 use mme::mme::Mme;
 
 use tracing::{trace, debug, info, warn, error};
+use slint::platform::Platform;
+use qt_core::{qs, QString, QTimer, SlotNoArgs};
+use qt_widgets::{QApplication, QGridLayout, QWidget};
 
 mod cli {
 }
@@ -40,7 +44,9 @@ fn main() {
 
         Some((cmd, sub_matches)) => Err(MmeError::new().msg(format!("The subcommand: {} is not known. use --help to list availavle commands", cmd))),
 
-        None => default_cmd(),
+        None => {
+            unsafe { default_cmd() }
+        },
     };
 
     if let Err(err) = result {
@@ -48,34 +54,52 @@ fn main() {
     }
 }
 
-#[link(name = "mme")]
-extern "C" { 
-    fn hello() -> ();
-}
 
 fn default_cmd() -> MmeResult<()> {
-    let mme = Mme::new_x_window();
+    let mme = Mme::new()?;
+
+    mme.create_x_window()?;
 
 
-    unsafe {
-        hello()
-    }
-
-    //let window = MainWindow::new().unwrap();
-    //window.run().unwrap();
     Ok(())
 }
 
+/*
+#[no_mangle]
+unsafe extern "C" fn place_slint_widget(slint_widget: *mut QWidget) {
+    println!("i am here");
+    let mme_widget = get_widget_by_title("place_slint");
+    println!("mme_widget: {:?}", mme_widget);
+    println!("mme_widget title: {}", qstring_to_rust((*mme_widget).window_title()));
 
+    let layout = (*mme_widget).layout();
+    println!("layout: {:?}", layout);
+    let grid_layout = layout.dynamic_cast::<QGridLayout>();
+    println!("grid_layout: {:?}", grid_layout);
+    println!("slint_widget: {:?}", slint_widget);
 
-slint::slint! {
-    export component MainWindow inherits Window {
-        Text {
-            text: "hello world";
-            color: green;
+    (*grid_layout).add_widget_3a(slint_widget, 0, 0);
+}
+
+unsafe extern "C" fn get_widget_by_title(title: &str) -> * mut QWidget {
+    let widgets = QApplication::top_level_widgets();
+    let mut mme_widget: *mut QWidget = *widgets.index_mut(0);
+
+    let widgets_size = widgets.size();
+    for i in 0..widgets_size {
+        let widget = *widgets.index(i);
+        let widget_title = qstring_to_rust((*widget).window_title());
+        println!("get_mme_main_widget: window_title: {}", widget_title);
+        if widget_title == title.to_owned() {
+            println!("found: {:?}", widget);
+            mme_widget = widget
         }
     }
+    return mme_widget;
 }
+*/
+
+
 
 
 fn cli_matches() -> clap::ArgMatches {
