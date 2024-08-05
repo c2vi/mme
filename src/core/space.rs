@@ -5,7 +5,7 @@ use crate::error::MmeResult;
 
 // this is the main type of this project
 // a Widget represents any kind of "screen realestate"
-// be it a Webview, slint, Xwindow, ...
+// be it a Webview, slint widget, Xwindow, ...
 pub struct Space {
     implementation: SpaceImplementor
 }
