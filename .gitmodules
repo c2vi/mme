@@ -1,0 +1,3 @@
+[submodule "presenters"]
+	path = presenters
+	url = git@github.com:c2vi/mme-presenters.git
