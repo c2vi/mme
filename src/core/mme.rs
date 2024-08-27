@@ -1,8 +1,12 @@
-use crate::error::MmeResult;
+use std::path::{Path, PathBuf};
 
 use qt_core::{qs, QString, QTimer, SlotNoArgs};
 use qt_widgets::{QApplication, QGridLayout, QWidget};
-use qt_gui::cpp_core::CppBox;
+use qt_gui::{cpp_core::CppBox};
+
+use crate::{error::MmeResult, implementors::{html::HtmlPresenter, qt_widget::QtWidgetSlot}, presenter};
+use crate::slot::{Slot, SlotTrait};
+use crate::presenter::Presenter;
 
 
 pub struct Mme {
@@ -31,8 +35,6 @@ impl Mme {
 
             let backend = i_slint_backend_qt::Backend::new();
 
-            //let core_app = unsafe { qt_core::QCoreApplication::instance() };
-            //let app = core_app.dynamic_cast::<QApplication>();
 
             let main_widget = qt_widgets::QWidget::new_0a();
             main_widget.show();
@@ -40,37 +42,16 @@ impl Mme {
 
 
 
-
-    let grid_layout = unsafe { qt_widgets::QGridLayout::new_0a() };
-    main_widget.set_layout(&grid_layout);
-
-    let button = unsafe { qt_widgets::QPushButton::new() };
-    button.set_text(&qs("hello from rust button"));
-
-    let button2 = unsafe { qt_widgets::QPushButton::new() };
-    button2.set_text(&qs("hello from another button"));
-    
-    let to_place_slint = QWidget::new_0a();
-    let to_place_slint_layout = QGridLayout::new_0a();
-    to_place_slint.set_layout(&to_place_slint_layout);
-    to_place_slint.set_window_title(&qs("place_slint"));
-    to_place_slint.set_style_sheet(&qs("border: 1px solid red"));
-    
-
-    grid_layout.add_widget_3a(&button, 0, 1);
-    grid_layout.add_widget_3a(&button2, 1, 0);
-    grid_layout.add_widget_3a(&to_place_slint, 2, 0);
-
-
-
-
-            comandr::platform::qt::init(to_place_slint.as_ptr());
+            comandr::platform::qt::init(main_widget.as_ptr());
           
             //let other_window = OtherWindow::new().unwrap();
             //other_window.show();
 
+            let presenter: Presenter = Presenter::HtmlPresenter(HtmlPresenter::from_folder(Path::new("/home/me/work/mme/mme-presenters/presenters/hello-world").to_owned())?);
 
+            let mut slot: Slot = Slot::QtWidgetSlot(QtWidgetSlot::from_widget(main_widget)?);
 
+            slot.load(presenter);
 
 
             println!("run_event_loop");
@@ -86,6 +67,8 @@ impl Mme {
         }
     }
 }
+
+
 
 unsafe fn test(main_widget: QWidget) {
 

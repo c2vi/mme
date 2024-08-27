@@ -1,5 +1,7 @@
 
 fn main() {
+
+
     let qt_lib_path = env!("MME_QT_LIB");
     cc::Build::new()
         .cpp(true)
@@ -14,7 +16,12 @@ fn main() {
     println!("cargo:rustc-link-lib=Qt5Widgets ");
     println!("cargo:rustc-link-lib=Qt5Gui ");
     println!("cargo:rustc-link-lib=Qt5Core");
+    println!("cargo:rustc-link-lib=Qt5WebEngine");
+    println!("cargo:rustc-link-lib=Qt5WebEngineCore");
+    println!("cargo:rustc-link-lib=Qt5WebEngineWidgets");
 
     println!("cargo:rerun-if-changed=src/main.cpp");
+
+    cpp_build::build("src/implementors/qt_widget/mod.rs");
 }
 

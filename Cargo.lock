@@ -3256,6 +3256,7 @@ dependencies = [
  "colored",
  "comandr",
  "cpp",
+ "cpp_build",
  "enum_dispatch",
  "i-slint-backend-qt",
  "qt_core",

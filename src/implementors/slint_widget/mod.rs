@@ -1,7 +1,10 @@
 use std::path::{Path, PathBuf};
+use qt_gui::q_touch_event::touch_point;
 use slint_interpreter::{ComponentInstance, ComponentDefinition, ComponentCompiler, Value, SharedString, ComponentHandle};
 
-use crate::space::{Space, SpaceImplementor, SpaceTrait, Position};
+use crate::presenter::Presenter;
+use crate::slot::SlotTrait;
+use crate::slot::Position;
 use crate::error::MmeResult;
 
 //pub mod qt_backend;
@@ -44,14 +47,12 @@ impl SlintWidget {
     }
 }
 
-impl SpaceTrait for SlintWidget {
-    fn put_top(self, pos: Position, widget: Space) -> MmeResult<()> {
-        todo!()
-    }
-    fn put_top_full(self, widget: Space) -> MmeResult<()> {
+impl SlotTrait for SlintWidget {
+    fn load(&mut self,presenter:Presenter) -> MmeResult<()> {
         todo!()
     }
 }
+
 
 
 

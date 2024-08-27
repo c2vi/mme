@@ -10,11 +10,56 @@
 #include <QtCore/QPointer>
 #include <QtCore/QDebug>
 #include <QtCore/QTimer>
+#include <QtCore/QString>
+
+//#include <QtWebEngine/QtWebEngine>
+#include <QtWebEngineWidgets/QWebEngineView>
+#include <QtCore/QUrl>
 
 extern "C" void run_my_event_loop( QPointer<QApplication> my_app );
 extern "C" void hello_two();
 extern "C" void hello_three();
 extern "C" QPointer<QWidget> get_stuff();
+
+extern "C" void create_webview(QWidget *widget, char * url_raw) {
+      
+  printf("in create_webview\n");
+
+  QString * url_string = new QString(url_raw);
+  QUrl url = QUrl::fromUserInput(*url_string);
+
+  QWebEngineView * view = new QWebEngineView(widget);
+  view->setUrl(url);
+  //view->resize(1024, 750);
+
+  QGridLayout *layout = new QGridLayout(widget);
+  layout->setContentsMargins(0, 0, 0, 0);
+  widget->layout()->setContentsMargins(0, 0, 0, 0);
+  QWidget * view_widget = (QWidget*) view;
+  view_widget->layout()->setContentsMargins(0, 0, 0, 0);
+
+  layout->addWidget ((QWidget*)view, 0, 0);
+
+  return;
+
+
+  QPushButton * button = new QPushButton(widget);
+  button->setText("My text");
+  button->setToolTip("A tooltip");
+
+  QPushButton * button2 = new QPushButton(widget);
+  button2->setText("My text 2");
+  button2->setToolTip("A tooltip 2");
+
+  QPushButton * button3 = new QPushButton(widget);
+  button3->setText("My text 3");
+  button3->setToolTip("A tooltip 3");
+
+  layout->addWidget (button, 0, 0);
+  layout->addWidget (button2, 0, 1);
+  layout->addWidget (button3, 1, 1);
+  layout->addWidget ((QWidget*)view, 1, 0);
+}
 
 /*
 class Foo : public QObject

@@ -1,36 +1,36 @@
 use enum_dispatch::enum_dispatch;
 
 use crate::implementors::slint_widget::SlintWidget;
+use crate::implementors::qt_widget::QtWidgetSlot;
 use crate::error::MmeResult;
+use crate::presenter::Presenter;
+
+// common behaviour for all SlotTypes
+#[enum_dispatch]
+pub trait SlotTrait {
+    fn load(&mut self, presenter: Presenter) -> MmeResult<()>;
+
+    //pub fn load_html(pressenter: HtmlPresenter) -> MmeResult<()> {}
+}
 
 // this is the main type of this project
 // a Widget represents any kind of "screen realestate"
 // be it a Webview, slint widget, Xwindow, ...
-pub struct Space {
-    implementation: SpaceImplementor
-}
 
 // an enum over all of what types such "screen realestate" could have
-#[enum_dispatch]
-pub enum SpaceImplementor {
+#[enum_dispatch(SlotTrait)]
+pub enum Slot {
     //Xwindow {},
     //WaylandWindow {},
-    SlintWidget,
-    //QtWidget {},
+    //SlintWidget,
+    QtWidgetSlot,
     //GtkWidget {},
-    //Html {},
+    //HtmlSlot,
     //QuarzWindow {},
     //NtWindow {},
     //Activity {},
 }
 
-// common behaviour for all Rendertypes
-#[enum_dispatch(WidgetImplementor)]
-pub trait SpaceTrait {
-    fn put_top(self, pos: Position, widget: Space) -> MmeResult<()>;
-
-    fn put_top_full(self, widget: Space) -> MmeResult<()>;
-}
 
 pub struct Position {
     x: u32,
