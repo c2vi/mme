@@ -7,6 +7,8 @@ use std::io;
 use colored::Colorize;
 use tracing::{trace, debug, info, warn, error};
 
+use crate::mme::Mme;
+
 #[macro_export]
 macro_rules! mme_err {
     ($($arg:tt)*) => { MmeError::new().msg(format!( $($arg)*)) };

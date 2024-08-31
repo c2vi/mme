@@ -7,10 +7,38 @@ use qt_gui::{cpp_core::CppBox};
 use crate::{error::MmeResult, implementors::{html::HtmlPresenter, qt_widget::QtWidgetSlot}, presenter};
 use crate::slot::{Slot, SlotTrait};
 use crate::presenter::Presenter;
+use tracing::info;
 
+use mize::Module;
+use mize::MizeResult;
+use mize::Instance;
+use mize::mize_err;
+use mize::MizeError;
 
 pub struct Mme {
+    hi: u8,
+}
 
+#[no_mangle]
+extern "C" fn get_mize_module_mme(empty_module: &mut Box<dyn Module + Send + Sync>) -> () {
+    let new_box: Box<dyn Module + Send + Sync> = Box::new(Mme { hi: 3 });
+
+    *empty_module = new_box
+}
+
+impl Module for Mme {
+    fn init(&mut self, _instance: &Instance) -> MizeResult<()> {
+        println!("mme module inittttttttttttttttttttttttttttttt");
+
+        self.create_x_window().map_err(|e| mize_err!("From MmeError: {:?}", e))
+
+    }
+
+    fn exit(&mut self, _instance: &Instance) -> MizeResult<()> {
+        info!("mme module exit");
+        Ok(())
+    }
+    
 }
 
 unsafe fn qstring_to_rust(q_string: CppBox<QString>) -> String {
@@ -27,10 +55,10 @@ unsafe fn qstring_to_rust(q_string: CppBox<QString>) -> String {
 
 impl Mme {
     pub fn new() -> MmeResult<Mme> {
-        Ok(Mme {})
+        Ok(Mme { hi: 4 })
     }
 
-    pub fn create_x_window(self) -> MmeResult<()> {
+    pub fn create_x_window(&self) -> MmeResult<()> {
         use tao::{
             event::{Event, WindowEvent},
             event_loop::{ControlFlow, EventLoop},
@@ -102,7 +130,7 @@ impl Mme {
         Ok(webui()?)
     }
 
-    pub fn create_qt_slot(self) -> MmeResult<()> {
+    pub fn create_qt_slot(&self) -> MmeResult<()> {
         unsafe {
 
             let backend = i_slint_backend_qt::Backend::new();

@@ -27,7 +27,8 @@ qt_widgets = "0.5.0"
 slint = "1.7.1"
 slint-interpreter = "1.7.1"
 #qt_gui = "0.5.0"
-comandr = { path = "../dr-comandr" }
+comandr = { git = "https://github.com/c2vi/comandr" }
+mize = { git = "https://github.com/c2vi/mize" }
 i-slint-backend-qt = "1.7.1"
 
 [build-dependencies]
