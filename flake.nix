@@ -14,10 +14,14 @@
       url = "github:ipetkov/crane";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    presenters = {
+      url = "github:c2vi/mme-presenters";
+      flake = false;
+    };
 
  		flake-utils.url = "github:numtide/flake-utils";
   };
-  outputs = { self, flake-utils, nixpkgs, fenix, crane, ... }@inputs: flake-utils.lib.eachDefaultSystem (system: 
+  outputs = { self, flake-utils, nixpkgs, fenix, crane, presenters, ... }@inputs: flake-utils.lib.eachDefaultSystem (system: 
 
 ############################## LET BINDINGS ##############################
 let
