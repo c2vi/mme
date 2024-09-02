@@ -39,4 +39,5 @@ mkMizeRustModule {
 }
 
 # build all presenters as submodules
-] ++ map (mod: buildModule mod extraArgs) (findModules presenters)
+#] ++ map (mod: buildModule mod extraArgs) (findModules presenters)
+]
