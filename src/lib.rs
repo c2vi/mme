@@ -20,7 +20,13 @@ pub use core::error;
 
 pub mod implementors {
     pub mod html;
+
+    #[cfg(features = "qt")]
     pub mod qt_widget;
+
+    #[cfg(features = "slint")]
     pub mod slint_widget;
+
+    #[cfg(features = "x11")]
     pub mod x_window;
 }

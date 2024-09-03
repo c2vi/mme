@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use crate::error::MmeResult;
+use crate::{error::MmeResult, slot::SlotTrait};
 
 
 pub struct HtmlPresenter {
@@ -15,4 +15,10 @@ impl HtmlPresenter {
 }
 
 pub struct HtmlSlot {
+}
+
+impl SlotTrait for HtmlSlot {
+    fn load(&mut self,presenter:crate::presenter::Presenter) -> MmeResult<()> {
+        Ok(())
+    }
 }

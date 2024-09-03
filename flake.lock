@@ -75,12 +75,26 @@
         "type": "github"
       }
     },
+    "presenters": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1725275716,
+        "narHash": "sha256-PPZ+pdGFeOMM08PAx5EIuyIK905cp0THpGlrb6XX80g=",
+        "path": "/home/me/work/mme-presenters",
+        "type": "path"
+      },
+      "original": {
+        "path": "/home/me/work/mme-presenters",
+        "type": "path"
+      }
+    },
     "root": {
       "inputs": {
         "crane": "crane",
         "fenix": "fenix",
         "flake-utils": "flake-utils",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "presenters": "presenters"
       }
     },
     "rust-analyzer-src": {

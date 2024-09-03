@@ -1,7 +1,13 @@
 use enum_dispatch::enum_dispatch;
 
+#[cfg(features = "slint")]
 use crate::implementors::slint_widget::SlintWidget;
+
+#[cfg(features = "qt")]
 use crate::implementors::qt_widget::QtWidgetSlot;
+
+use crate::implementors::html::HtmlSlot;
+
 use crate::error::MmeResult;
 use crate::presenter::Presenter;
 
@@ -23,9 +29,10 @@ pub enum Slot {
     //Xwindow {},
     //WaylandWindow {},
     //SlintWidget,
+    #[cfg(features = "qt")]
     QtWidgetSlot,
     //GtkWidget {},
-    //HtmlSlot,
+    HtmlSlot,
     //QuarzWindow {},
     //NtWindow {},
     //Activity {},

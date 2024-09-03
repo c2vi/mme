@@ -87,6 +87,13 @@ in {
         # gobject-introspection gtk4 atkmm
       ];
 
+      MIZE_BUILD_CONFIG = pkgs.writeTextFile {
+        name = "mize-build-config";
+        text = builtins.toJSON ({
+          test = "hiiii";
+        });
+      };
+
       shellHook = ''
         echo hiiiiiiiiiiiiii
         export LD_LIBRARY_PATH=${pkgs.webkitgtk_4_1}/lib:${pkgs.libsoup_3}/lib:${pkgs.glib.out}/lib:${pkgs.gtk3}/lib:${pkgs.cairo}/lib:${pkgs.gdk-pixbuf}/lib:${pkgs.libxkbcommon}/lib:${pkgs.fontconfig.lib}/lib:${pkgs.libsForQt5.full}/lib:${pkgs.stdenv.cc.cc.lib}/lib:${pkgs.libsForQt5.qt5.qtwebengine}/lib

@@ -1,13 +1,19 @@
 use std::path::{Path, PathBuf};
 
-use qt_core::{qs, QString, QTimer, SlotNoArgs};
-use qt_widgets::{QApplication, QGridLayout, QWidget};
-use qt_gui::{cpp_core::CppBox};
 
-use crate::{error::MmeResult, implementors::{html::HtmlPresenter, qt_widget::QtWidgetSlot}, presenter};
+use crate::{error::MmeResult, implementors::{html::HtmlPresenter}, presenter};
 use crate::slot::{Slot, SlotTrait};
 use crate::presenter::Presenter;
 use tracing::info;
+
+#[cfg(features = "os-target")]
+use crate::implementors::qt_widget::QtWidgetSlot;
+#[cfg(features = "os-target")]
+use qt_core::{qs, QString, QTimer, SlotNoArgs};
+#[cfg(features = "os-target")]
+use qt_widgets::{QApplication, QGridLayout, QWidget};
+#[cfg(features = "os-target")]
+use qt_gui::{cpp_core::CppBox};
 
 use mize::Module;
 use mize::MizeResult;
@@ -30,8 +36,18 @@ impl Module for Mme {
     fn init(&mut self, _instance: &Instance) -> MizeResult<()> {
         println!("mme module inittttttttttttttttttttttttttttttt");
 
-        self.create_x_window().map_err(|e| mize_err!("From MmeError: {:?}", e))
 
+        #[cfg(features = "os-target")]
+        {
+            self.create_x_window().map_err(|e| mize_err!("From MmeError: {:?}", e))
+        }
+
+        #[cfg(features = "wasm-target")]
+        {
+            self.create_html_slot().map_err(|e| mize_err!("From MmeError: {:?}", e))
+        }
+
+        Ok(())
     }
 
     fn exit(&mut self, _instance: &Instance) -> MizeResult<()> {
@@ -41,6 +57,7 @@ impl Module for Mme {
     
 }
 
+#[cfg(features = "qt")]
 unsafe fn qstring_to_rust(q_string: CppBox<QString>) -> String {
     let mut rust_string = String::new();
     let q_string_size = q_string.size();
@@ -58,6 +75,12 @@ impl Mme {
         Ok(Mme { hi: 4 })
     }
 
+    #[cfg(features = "wasm-target")]
+    pub fn create_html_slot() -> MmeResult<()> {
+        println!("hi wasm")
+    }
+
+    #[cfg(features = "os-target")]
     pub fn create_x_window(&self) -> MmeResult<()> {
         use tao::{
             event::{Event, WindowEvent},
@@ -130,6 +153,7 @@ impl Mme {
         Ok(webui()?)
     }
 
+    #[cfg(features = "qt")]
     pub fn create_qt_slot(&self) -> MmeResult<()> {
         unsafe {
 
@@ -170,37 +194,3 @@ impl Mme {
 
 
 
-unsafe fn test(main_widget: QWidget) {
-
-
-
-    let widgets = QApplication::top_level_widgets();
-    //let widget_iter = (*widgets).begin_mut();
-
-    let widgets_size = widgets.size();
-    for i in 0..widgets_size {
-        let widget = *widgets.index(i);
-        println!("widget: {:?}", widget);
-        println!("hidden: {}", (*widget).is_hidden());
-        //(*widget).set_hidden(false);
-
-
-        let widget_title = qstring_to_rust((*widget).window_title());
-        println!("title: {}", widget_title);
-
-        println!("");
-    }
-
-    let window = MainWindow::new().unwrap();
-    let hi = window.window();
-    window.show();
-}
-
-slint::slint! {
-    export component MainWindow inherits Window {
-        Text {
-            text: "hello world";
-            color: green;
-        }
-    }
-}
