@@ -1,7 +1,7 @@
 
 fn main() {
 
-    #[cfg(features = "qt")]
+    #[cfg(feature = "qt")]
     {
         let qt_lib_path = env!("MME_QT_LIB");
         cc::Build::new()

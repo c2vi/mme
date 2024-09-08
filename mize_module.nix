@@ -5,6 +5,7 @@
 , buildNpmPackage
 , crossSystem
 , pkgsCross
+, pkgsNative
 , ...
 }: let
   mmeFlake = builtins.getFlake ./.;
@@ -44,7 +45,7 @@ mkMizeRustModule ({
   nativeBuildInputs = with pkgsCross.buildPackages; [
     pkg-config
   ];
-  buildInputs = with pkgsCross; [
+  buildInputs = with pkgsNative; [
     webkitgtk_4_1
   ];
 } else {})

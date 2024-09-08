@@ -15,7 +15,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     presenters = {
-      url = "github:c2vi/mme-presenters";
+      #url = "github:c2vi/mme-presenters";
+
+      # to test with local changes
+      url = "/home/me/work/mme-presenters";
       flake = false;
     };
 
@@ -27,10 +30,10 @@
 let
   pkgs = nixpkgs.legacyPackages.${system};
   wasmToolchain = fenix.packages.${system}.combine [
-    fenix.packages.${system}.targets.wasm32-unknown-unknown.latest.toolchain
-    fenix.packages.${system}.latest.toolchain
+    fenix.packages.${system}.targets.wasm32-unknown-unknown.stable.toolchain
+    fenix.packages.${system}.stable.toolchain
   ];
-  osToolchain = fenix.packages.${system}.latest.toolchain;
+  osToolchain = fenix.packages.${system}.stable.toolchain;
   wasmCrane = crane.lib.${system}.overrideToolchain wasmToolchain;
   osCrane = crane.lib.${system}.overrideToolchain osToolchain;
 

@@ -1,6 +1,9 @@
 
 #![ allow( warnings ) ]
 
+//#![no_std]
+//extern crate std;
+
 mod core {
     pub mod mme;
     pub mod error;

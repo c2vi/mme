@@ -3,8 +3,8 @@
 use std::path::PathBuf;
 use clap::{ArgAction, ArgMatches};
 use clap::{Arg, crate_version, Command};
-use cpp::cpp;
-use slint::ComponentHandle;
+//use cpp::cpp;
+//use slint::ComponentHandle;
 
 use std::sync::Arc;
 use std::io::Write;
@@ -19,9 +19,9 @@ use mme::error::{MmeResult, MmeError};
 use mme::mme::Mme;
 
 use tracing::{trace, debug, info, warn, error};
-use slint::platform::Platform;
-use qt_core::{qs, QString, QTimer, SlotNoArgs};
-use qt_widgets::{QApplication, QGridLayout, QWidget};
+//use slint::platform::Platform;
+//use qt_core::{qs, QString, QTimer, SlotNoArgs};
+//use qt_widgets::{QApplication, QGridLayout, QWidget};
 
 mod cli {
 }

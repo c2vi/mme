@@ -1,10 +1,11 @@
 use std::path::{Path, PathBuf};
-
+use wasm_bindgen::prelude::*;
 
 use crate::{error::MmeResult, implementors::{html::HtmlPresenter}, presenter};
 use crate::slot::{Slot, SlotTrait};
 use crate::presenter::Presenter;
 use tracing::info;
+use comandr::Comandr;
 
 #[cfg(features = "os-target")]
 use crate::implementors::qt_widget::QtWidgetSlot;
@@ -22,20 +23,20 @@ use mize::mize_err;
 use mize::MizeError;
 
 pub struct Mme {
-    hi: u8,
+    pub comandr: Comandr,
+    pub hi: String,
 }
 
 #[no_mangle]
 extern "C" fn get_mize_module_mme(empty_module: &mut Box<dyn Module + Send + Sync>) -> () {
-    let new_box: Box<dyn Module + Send + Sync> = Box::new(Mme { hi: 3 });
+    let comandr = Comandr::new();
+    let new_box: Box<dyn Module + Send + Sync> = Box::new( Mme { comandr, hi: "hi inside mme".to_owned() } );
 
     *empty_module = new_box
 }
 
 impl Module for Mme {
     fn init(&mut self, _instance: &Instance) -> MizeResult<()> {
-        println!("mme module inittttttttttttttttttttttttttttttt");
-
 
         #[cfg(features = "os-target")]
         {
@@ -72,15 +73,17 @@ unsafe fn qstring_to_rust(q_string: CppBox<QString>) -> String {
 
 impl Mme {
     pub fn new() -> MmeResult<Mme> {
-        Ok(Mme { hi: 4 })
+        let comandr = Comandr::new();
+        Ok(Mme { comandr, hi: "hi inside mme".to_owned() })
     }
 
-    #[cfg(features = "wasm-target")]
+    #[cfg(feature = "wasm-target")]
     pub fn create_html_slot() -> MmeResult<()> {
-        println!("hi wasm")
+        println!("hi wasm");
+        Ok(())
     }
 
-    #[cfg(features = "os-target")]
+    #[cfg(feature = "os-target")]
     pub fn create_x_window(&self) -> MmeResult<()> {
         use tao::{
             event::{Event, WindowEvent},
@@ -117,7 +120,7 @@ impl Mme {
 
             let _webview = builder
             //.with_url("file:///home/me/work/mme/test.html")
-            .with_url("file:///home/me/work/mme/presenters/presenters/mme-js/dist/index.html")
+            .with_url("file:///home/me/work/mme-presenters/presenters/mme-js/dist/index.html")
             /*
             .with_drag_drop_handler(|e| {
               match e {
@@ -136,6 +139,7 @@ impl Mme {
             })
             */
             .build()?;
+            _webview.open_devtools();
 
             event_loop.run(move |event, _, control_flow| {
                 *control_flow = ControlFlow::Wait;
@@ -171,7 +175,7 @@ impl Mme {
             //let other_window = OtherWindow::new().unwrap();
             //other_window.show();
 
-            let presenter: Presenter = Presenter::HtmlPresenter(HtmlPresenter::from_folder(Path::new("/home/me/work/mme/presenters/presenters/hello-world").to_owned())?);
+            let presenter: Presenter = Presenter::HtmlPresenter(HtmlPresenter::from_folder(Path::new("/home/me/work/mme-presenters/presenters/hello-world").to_owned())?);
 
             let mut slot: Slot = Slot::QtWidgetSlot(QtWidgetSlot::from_widget(main_widget)?);
 

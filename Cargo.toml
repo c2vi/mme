@@ -10,13 +10,15 @@ default = [ "os-target" ]
 qt = [ "slint", "cpp", "qt_core", "qt_gui", "qt_widgets", "comandr/qt" ]
 slint = [ "i-slint-backend-qt", "dep:slint", "slint-interpreter", "spin_on", "qt" ]
 os-target = [ "tao", "wry", "tracing-subscriber", "clap" ]
-wasm-target = [ "wasm-bindgen", "console_error_panic_hook", "wasm-bindgen-cli" ]
+wasm-target = [ "wasm-bindgen", "console_error_panic_hook", "wasm-bindgen-cli", "web-sys", "comandr/wasm-target" ]
+console_error_panic_hook = ["dep:console_error_panic_hook"]
 
 [dependencies]
 # core deps
 colored = "2.1.0"
 enum_dispatch = "0.3.13"
-comandr = { git = "https://github.com/c2vi/comandr" }
+#comandr = { git = "https://github.com/c2vi/comandr" }
+comandr = { path = "../../../dr-comandr" }
 mize = { git = "https://github.com/c2vi/mize" }
 tracing = "0.1.40"
 
@@ -24,6 +26,7 @@ tracing = "0.1.40"
 wasm-bindgen = { version = "0.2.84", optional = true }
 console_error_panic_hook = { version = "0.1.7", optional = true }
 wasm-bindgen-cli = { version = "0.2.92", optional = true }
+web-sys = { version = "0.3.70", optional = true, features = ['console'] }
 
 # os deps
 tao = { version = "0.28.1", optional = true }
@@ -43,6 +46,7 @@ i-slint-backend-qt = { version = "1.7.1", optional = true }
 slint = { version = "1.7.1", optional = true }
 slint-interpreter = { version = "1.7.1", optional = true }
 spin_on = { version = "0.1.1", optional = true }
+custom-print = "1.0.0"
 
 [build-dependencies]
 cc = "1.1.5"
