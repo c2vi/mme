@@ -33,12 +33,16 @@ impl SlotTrait for HtmlSlot {
 mod wasm {
 
     use comandr::Comandr;
+    use comandr::Command;
     use wasm_bindgen::prelude::*;
     use web_sys::console;
     use web_sys::EventTarget;
     use web_sys::js_sys::Function;
     use std::panic;
     use std::ptr::NonNull;
+    use std::slice::Iter;
+    use comandr::Module;
+    use comandr::ComandrResult;
 
     use crate::mme::Mme;
 
@@ -74,6 +78,8 @@ mod wasm {
 
             if let Ok(mut mme) = Mme::new() {
                 mme.comandr.init();
+                let mme_comandr_module = Box::new(MmeComandrModule::new());
+                mme.comandr.load_module(mme_comandr_module);
                 let mut mmejs = MmeJs { inner: NonNull::from(Box::leak(Box::new(mme))) };
                 return mmejs;
             } else {
@@ -87,11 +93,64 @@ mod wasm {
             self.inner.as_mut().comandr.search(string)
         }
 
+        pub unsafe fn comandr_list(&mut self) -> Vec<String> {
+            self.inner.as_mut().comandr.list_commands()
+        }
+
+        #[wasm_bindgen]
+        pub unsafe fn comandr_run(&mut self, name: String, args: Vec<String>) -> () {
+            self.inner.as_mut().comandr.execute(name, args)
+        }
+
     }
 
-    impl Mme {
-        pub fn test(&self) {
-            console_log!("mme test fn: {}", self.hi);
+
+    pub struct MmeComandrModule {
+        commands: Vec<Command>
+    }
+
+    fn reload_page() -> ComandrResult<()>{
+        let js_fn_str = r#"
+            window.location.reload()
+        "#;
+        let js_fn = Function::new_no_args(js_fn_str);
+    
+        js_fn.call0(&web_sys::wasm_bindgen::JsValue::NULL);
+
+        Ok(())
+    }
+
+    fn hello() -> ComandrResult<()> {
+        console_log!("hellooooo command");
+        Ok(())
+    }
+
+    impl MmeComandrModule {
+        pub fn new() -> MmeComandrModule {
+            let commands = vec![
+                Command { name: "reload".to_owned(), closure: Box::new(reload_page) },
+                Command { name: "test".to_owned(), closure: Box::new(hello) },
+            ];
+            MmeComandrModule { commands }
+        }
+    }
+
+    impl Module for MmeComandrModule {
+        fn name(&self) -> String {
+            "mme".to_owned()
+        }
+
+        fn commands(&self) -> Iter<'_, Command> {
+            self.commands.iter()
+        }
+
+        fn get_command(&mut self, name: String) -> Option<&mut Command> {
+            for command in self.commands.iter_mut() {
+                if command.name == name {
+                    return Some(command);
+                }
+            }
+            return None;
         }
     }
 
