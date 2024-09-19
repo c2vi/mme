@@ -24,12 +24,12 @@ pub use core::error;
 pub mod implementors {
     pub mod html;
 
-    #[cfg(features = "qt")]
+    #[cfg(feature = "qt")]
     pub mod qt_widget;
 
-    #[cfg(features = "slint")]
+    #[cfg(feature = "slint")]
     pub mod slint_widget;
 
-    #[cfg(features = "x11")]
+    #[cfg(feature = "x11")]
     pub mod x_window;
 }

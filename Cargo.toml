@@ -3,13 +3,16 @@ name = "mme"
 version = "0.1.0"
 edition = "2021"
 
+[package.metadata.wasm-pack.profile.dev]
+wasm-opt = false
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
 default = [ "os-target" ]
 qt = [ "slint", "cpp", "qt_core", "qt_gui", "qt_widgets", "comandr/qt" ]
 slint = [ "i-slint-backend-qt", "dep:slint", "slint-interpreter", "spin_on", "qt" ]
-os-target = [ "tao", "wry", "tracing-subscriber", "clap" ]
+os-target = [ "tao", "wry", "tracing-subscriber", "clap", "webkit2gtk" ]
 wasm-target = [ "wasm-bindgen", "console_error_panic_hook", "wasm-bindgen-cli", "web-sys", "comandr/wasm-target" ]
 console_error_panic_hook = ["dep:console_error_panic_hook"]
 
@@ -30,9 +33,10 @@ web-sys = { version = "0.3.70", optional = true, features = ['console'] }
 
 # os deps
 tao = { version = "0.28.1", optional = true }
-wry = { version = "0.41.0", optional = true }
+wry = { version = "0.41.0", optional = true, features = [ "devtools" ] }
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"], optional = true }
 clap = { version = "4.5.8", features = ["cargo"], optional = true }
+webkit2gtk = { version = "2.0.1", optional = true }
 
 # qt deps
 #qt_gui = "0.5.0"

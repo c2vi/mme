@@ -34,7 +34,6 @@ mod wasm {
 
     use comandr::Comandr;
     use comandr::Command;
-    use wasm_bindgen::prelude::*;
     use web_sys::console;
     use web_sys::EventTarget;
     use web_sys::js_sys::Function;
@@ -46,6 +45,8 @@ mod wasm {
 
     use crate::mme::Mme;
 
+    // console log
+    use wasm_bindgen::prelude::*;
     #[wasm_bindgen]
     extern "C" {
         #[wasm_bindgen(js_namespace = console)]
@@ -56,6 +57,7 @@ mod wasm {
         // `bare_bones`
         ($($t:tt)*) => (log(&format_args!($($t)*).to_string()))
     }
+    // end of console log
 
     // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
     // allocator.
@@ -153,16 +155,6 @@ mod wasm {
             return None;
         }
     }
-
-
-
-    //custom_print::define_macros!({ jprint, jprintln },
-       //concat, extern "C" fn console_log(_: *const u8, _: usize));
-    //custom_print::define_macros!({ jeprint, jeprintln, jdbg },
-       //concat, extern "C" fn console_warn(_: *const u8, _: usize));
-    //custom_print::define_init_panic_hook!(
-       //concat, extern "C" fn console_error(_: *const u8, _: usize));
-
 
 }
 

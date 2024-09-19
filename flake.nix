@@ -22,16 +22,24 @@
       flake = false;
     };
 
+    nix-std.url = "github:chessai/nix-std";
+
  		flake-utils.url = "github:numtide/flake-utils";
   };
-  outputs = { self, flake-utils, nixpkgs, fenix, crane, presenters, ... }@inputs: flake-utils.lib.eachDefaultSystem (system: 
+  outputs = { self, flake-utils, nixpkgs, fenix, crane, presenters, nix-std, ... }@inputs: flake-utils.lib.eachDefaultSystem (system: 
 
 ############################## LET BINDINGS ##############################
 let
   pkgs = nixpkgs.legacyPackages.${system};
   wasmToolchain = fenix.packages.${system}.combine [
-    fenix.packages.${system}.targets.wasm32-unknown-unknown.stable.toolchain
-    fenix.packages.${system}.stable.toolchain
+    fenix.packages.${system}.targets.wasm32-unknown-unknown.latest.toolchain
+    #fenix.packages.${system}.targets.wasm32-unknown-emscripten.latest.toolchain
+    #fenix.packages.${system}.targets.wasm32-wasip1-threads.stable.toolchain
+    fenix.packages.${system}.latest.toolchain
+    #(fenix.packages.${system}.fromToolchainFile {
+      #file = ./rust-toolchain.toml;
+      #sha256 = "sha256-GJR7CjFPMh450uP/EUzXeng15vusV3ktq7Cioop945U=";
+    #})
   ];
   osToolchain = fenix.packages.${system}.stable.toolchain;
   wasmCrane = crane.lib.${system}.overrideToolchain wasmToolchain;
@@ -63,6 +71,7 @@ in {
     devShells.default = pkgs.mkShell {
 
       nativeBuildInputs = with pkgs; [
+        #emscripten
         wasm-pack #pkg-config openssl #cargo rustc
         cargo-generate
         pkg-config 
@@ -90,12 +99,15 @@ in {
         # gobject-introspection gtk4 atkmm
       ];
 
-      MIZE_BUILD_CONFIG = pkgs.writeTextFile {
-        name = "mize-build-config";
-        text = builtins.toJSON ({
-          test = "hiiii";
-        });
-      };
+      MIZE_BUILD_CONFIG = let
+        settingsFormat = pkgs.formats.toml { };
+        in settingsFormat.generate "mize-build-config.toml" {
+          config = {
+            namespace = "mize.buildtime.ns";
+            #module_url = "c2vi.dev";
+            module_dir = "/home/me/work/modules/";
+          };
+        };
 
       shellHook = ''
         echo hiiiiiiiiiiiiii

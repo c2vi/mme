@@ -3599,6 +3599,7 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-cli",
  "web-sys",
+ "webkit2gtk",
  "wry",
 ]
 

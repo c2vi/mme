@@ -1,5 +1,4 @@
 use std::path::{Path, PathBuf};
-use wasm_bindgen::prelude::*;
 
 use crate::{error::MmeResult, implementors::{html::HtmlPresenter}, presenter};
 use crate::slot::{Slot, SlotTrait};
@@ -37,15 +36,17 @@ extern "C" fn get_mize_module_mme(empty_module: &mut Box<dyn Module + Send + Syn
 
 impl Module for Mme {
     fn init(&mut self, _instance: &Instance) -> MizeResult<()> {
+        println!("MmeModule init");
 
-        #[cfg(features = "os-target")]
+        #[cfg(feature = "os-target")]
         {
-            self.create_x_window().map_err(|e| mize_err!("From MmeError: {:?}", e))
+            self.create_x_window().map_err(|e| mize_err!("From MmeError: {:?}", e))?;
         }
 
-        #[cfg(features = "wasm-target")]
+        #[cfg(feature = "wasm-target")]
         {
-            self.create_html_slot().map_err(|e| mize_err!("From MmeError: {:?}", e))
+            //ther is no html slots yet
+            //self.create_html_slot().map_err(|e| mize_err!("From MmeError: {:?}", e))
         }
 
         Ok(())
@@ -58,7 +59,7 @@ impl Module for Mme {
     
 }
 
-#[cfg(features = "qt")]
+#[cfg(feature = "qt")]
 unsafe fn qstring_to_rust(q_string: CppBox<QString>) -> String {
     let mut rust_string = String::new();
     let q_string_size = q_string.size();
@@ -90,7 +91,9 @@ impl Mme {
             event_loop::{ControlFlow, EventLoop},
             window::WindowBuilder,
         };
-        use wry::WebViewBuilder;
+        use wry::{WebViewBuilder, WebViewExtUnix};
+        use webkit2gtk::{Settings, WebInspectorExt};
+        use webkit2gtk::WebViewExt;
 
         fn webui() -> wry::Result<()> {
             let event_loop = EventLoop::new();
@@ -139,7 +142,17 @@ impl Mme {
             })
             */
             .build()?;
-            _webview.open_devtools();
+            //_webview.open_devtools();
+
+            let settings = Settings::builder()
+                .allow_file_access_from_file_urls(true)
+                .enable_developer_extras(true)
+                .build();
+            let __webview = _webview.webview();
+           __webview.set_settings(&settings);
+
+            let inspector = __webview.inspector().expect("no inspector");
+            inspector.show();
 
             event_loop.run(move |event, _, control_flow| {
                 *control_flow = ControlFlow::Wait;
