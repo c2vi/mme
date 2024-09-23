@@ -118,6 +118,8 @@ in {
         # i found that this is the env war to set where QT looks for platform plugins
         # at: https://forums.fedoraforum.org/showthread.php?326508-How-to-set-QT_QPA_PLATFORM_PLUGIN_PATH
         export QT_QPA_PLATFORM_PLUGIN_PATH=${pkgs.libsForQt5.full}/lib/qt-5.15.14/plugins/platforms/
+        
+        alias run="${self}/run.sh"
       '';
 
     };

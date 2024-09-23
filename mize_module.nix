@@ -39,6 +39,7 @@ in #[
 mkMizeRustModule ({
   modName = "mme";
   src = ./.;
+  cargoExtraArgs = "--no-default-features --lib";
 }
 
 // (if crossSystem.kernel.name == "linux" then builtins.trace "adding linux stuff" {

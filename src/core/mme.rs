@@ -86,13 +86,22 @@ impl Mme {
 
     #[cfg(feature = "os-target")]
     pub fn create_x_window(&self) -> MmeResult<()> {
+        use std::fs;
+
         use tao::{
             event::{Event, WindowEvent},
             event_loop::{ControlFlow, EventLoop},
             window::WindowBuilder,
         };
-        use wry::{WebViewBuilder, WebViewExtUnix};
+        use wry::WebViewBuilder;
+
+        #[cfg(target_os = "linux")]
+        use wry::WebViewExtUnix;
+
+        #[cfg(target_os = "linux")]
         use webkit2gtk::{Settings, WebInspectorExt};
+
+        #[cfg(target_os = "linux")]
         use webkit2gtk::WebViewExt;
 
         fn webui() -> wry::Result<()> {
@@ -113,7 +122,6 @@ impl Mme {
                 target_os = "ios",
                 target_os = "android"
             )))]
-
             let builder = {
                 use tao::platform::unix::WindowExtUnix;
                 use wry::WebViewBuilderExtUnix;
@@ -121,9 +129,15 @@ impl Mme {
                 WebViewBuilder::new_gtk(vbox)
             };
 
+            //let html_str = fs::read_to_string(format!("{}/../implementors/html/js-runtime/dist/index.html", file!()))?;
+            println!("hooooooooooooooooooooooooooooooooooooo html_str");
+            //println!("html_str: {}", html_str);
+
             let _webview = builder
             //.with_url("file:///home/me/work/mme/test.html")
-            .with_url("file:///home/me/work/mme-presenters/presenters/mme-js/dist/index.html")
+            //.with_url("../implementors/html/js-runtime/dist/index.html")
+            .with_url(format!("file://{}/../implementors/html/js-runtime/dist/index.html", file!()))
+            //.with_html(html_str)
             /*
             .with_drag_drop_handler(|e| {
               match e {
@@ -144,15 +158,18 @@ impl Mme {
             .build()?;
             //_webview.open_devtools();
 
-            let settings = Settings::builder()
-                .allow_file_access_from_file_urls(true)
-                .enable_developer_extras(true)
-                .build();
-            let __webview = _webview.webview();
-           __webview.set_settings(&settings);
+            #[cfg(target_os = "linux")]
+            {
+                let settings = Settings::builder()
+                    .allow_file_access_from_file_urls(true)
+                    .enable_developer_extras(true)
+                    .build();
+                let __webview = _webview.webview();
+               __webview.set_settings(&settings);
 
-            let inspector = __webview.inspector().expect("no inspector");
-            inspector.show();
+                let inspector = __webview.inspector().expect("no inspector");
+                inspector.show();
+            }
 
             event_loop.run(move |event, _, control_flow| {
                 *control_flow = ControlFlow::Wait;
