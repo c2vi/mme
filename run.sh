@@ -19,8 +19,8 @@ cd /home/me/work/mme-presenters/presenters/mme-js/
 npm run build -- --mode development
 
 
-cargo build --manifest-path ~/work/modules/modules/mme/Cargo.toml
-cargo build --manifest-path ~/work/modules/modules/String/Cargo.toml
+cargo build --manifest-path ~/work/modules/modules/mme/Cargo.toml --lib
+cargo build --manifest-path ~/work/modules/modules/String/Cargo.toml --lib
 
 
 cargo run --manifest-path ~/work/mize/Cargo.toml -- gui

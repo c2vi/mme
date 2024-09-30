@@ -3,6 +3,7 @@ name = "mme"
 version = "0.1.0"
 edition = "2021"
 
+
 [package.metadata.wasm-pack.profile.dev]
 wasm-opt = false
 
@@ -60,4 +61,5 @@ cc = "1.1.5"
 cpp_build = "0.5"
 
 [lib]
+name = "mize_module_mme"
 crate-type =["cdylib", "rlib"]
