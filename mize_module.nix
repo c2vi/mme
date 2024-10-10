@@ -59,7 +59,7 @@ mkMizeRustModule ({
     nativeBuildInputs = with pkgs; [
       #emscripten
       wasm-pack
-      pkg-config 
+      pkg-config
       webkitgtk_4_1
       libsForQt5.full
       cmake
