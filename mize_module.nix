@@ -20,8 +20,8 @@
     };
   } // attrs);
 
-  mkMmeNpmPresenter = attrs: buildNpmPackage attrs // {
-  };
+  mkMmeNpmPresenter = attrs: buildNpmPackage (attrs // {
+  });
 
   mkMmeHtmlPresenter = attrs: mkMmePresenter {
     dontUnpack = true;
