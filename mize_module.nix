@@ -1,20 +1,7 @@
-{mkMizeRustModule
-, buildModule
-, findModules
-, mkMizeModule
-, buildNpmPackage
-, crossSystem
-, pkgsCross
-, pkgsNative
-, pkgs
-, mkMizeRustShell
-, fetchFromGitHub
-, ...
-}: let
+{
 
-in {
 
-module = mkMizeRustModule ({
+module = { mkMizeRustModule, crossSystem, pkgsCross, mkMizeRustShell, pkgs, pkgsNative, ... }: mkMizeRustModule ({
   modName = "mme";
   src = ./.;
   cargoExtraArgs = "--no-default-features --lib";
@@ -73,7 +60,7 @@ module = mkMizeRustModule ({
 
 
 
-lib = rec {
+lib = { mkMizeModule, buildNpmPackage, ... }: rec {
   mkMmePresenter = attrs: mkMizeModule ({
     select = {
       inherit (attrs) name;
@@ -85,6 +72,7 @@ lib = rec {
   });
 
   mkMmeHtmlPresenter = attrs: mkMmePresenter {
+    modName = "presenter.${attrs.name}";
     dontUnpack = true;
     dontPath = true;
     buildPhase = "";
@@ -98,18 +86,17 @@ lib = rec {
 
 
 
-externals = [
+externals = { fetchFromGitHub, ... }: [
 
-  /*
   (fetchFromGitHub {
     owner = "c2vi";
     repo = "mme-presenters";
     rev = "master";
     hash = "sha256-FeMBDCJBkw9XOLXC1rfedNk71uyg4OTCHaaO1jAAGto=";
   })
-  */
 
 ];
+
 
 }
 
