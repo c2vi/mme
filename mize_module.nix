@@ -8,37 +8,13 @@
 , pkgsNative
 , pkgs
 , mkMizeRustShell
+, fetchFromGitHub
 , ...
 }: let
-  mmeFlake = builtins.getFlake ./.;
-  presenters = mmeFlake.inputs.presenters;
 
-  mkMmePresenter = attrs: mkMizeModule ({
-    select = {
-      inherit (attrs) name;
-      MmePresenter = true;
-    };
-  } // attrs);
+in {
 
-  mkMmeNpmPresenter = attrs: buildNpmPackage (attrs // {
-  });
-
-  mkMmeHtmlPresenter = attrs: mkMmePresenter {
-    dontUnpack = true;
-    dontPath = true;
-    buildPhase = "";
-    installPhase = ''
-      mkdir -p $out
-      cp -r ${attrs.src}/* $out
-    '';
-  };
-
-  extraArgs = {
-    inherit mkMmePresenter mkMmeHtmlPresenter;
-  };
-in #[
-
-mkMizeRustModule ({
+module = mkMizeRustModule ({
   modName = "mme";
   src = ./.;
   cargoExtraArgs = "--no-default-features --lib";
@@ -92,9 +68,48 @@ mkMizeRustModule ({
   };
 }
 
-)
+);
 
 
-# build all presenters as submodules
-#] ++ map (mod: buildModule mod extraArgs) (findModules presenters)
-#]
+
+
+lib = rec {
+  mkMmePresenter = attrs: mkMizeModule ({
+    select = {
+      inherit (attrs) name;
+      MmePresenter = true;
+    };
+  } // attrs);
+
+  mkMmeNpmPresenter = attrs: buildNpmPackage (attrs // {
+  });
+
+  mkMmeHtmlPresenter = attrs: mkMmePresenter {
+    dontUnpack = true;
+    dontPath = true;
+    buildPhase = "";
+    installPhase = ''
+      mkdir -p $out
+      cp -r ${attrs.src}/* $out
+    '';
+  };
+};
+
+
+
+
+externals = [
+
+  /*
+  (fetchFromGitHub {
+    owner = "c2vi";
+    repo = "mme-presenters";
+    rev = "master";
+    hash = "sha256-FeMBDCJBkw9XOLXC1rfedNk71uyg4OTCHaaO1jAAGto=";
+  })
+  */
+
+];
+
+}
+
