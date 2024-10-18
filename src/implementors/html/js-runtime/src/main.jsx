@@ -11,6 +11,8 @@ import { JsInstance } from '@c2vi/mize'
 window.mme = new MmeJs()
 
 window.mize = new JsInstance()
+
+
 comandr_ui_init()
 
 
