@@ -23,24 +23,24 @@ use mize::MizeError;
 
 pub struct Mme {
     pub comandr: Comandr,
-    pub hi: String,
+    pub mize: Instance,
 }
 
 #[no_mangle]
-extern "C" fn get_mize_module_mme(empty_module: &mut Box<dyn Module + Send + Sync>) -> () {
+extern "C" fn get_mize_module_mme(empty_module: &mut Box<dyn Module + Send + Sync>, mize: Instance) -> () {
     let comandr = Comandr::new();
-    let new_box: Box<dyn Module + Send + Sync> = Box::new( Mme { comandr, hi: "hi inside mme".to_owned() } );
+    let new_box: Box<dyn Module + Send + Sync> = Box::new( Mme { comandr, mize, } );
 
     *empty_module = new_box
 }
 
 impl Module for Mme {
-    fn init(&mut self, _instance: &Instance) -> MizeResult<()> {
+    fn init(&mut self, _instance: &mut Instance) -> MizeResult<()> {
         println!("MmeModule init");
 
         #[cfg(feature = "os-target")]
         {
-            self.create_x_window().map_err(|e| mize_err!("From MmeError: {:?}", e))?;
+            self.mize.spawn("mme-main", || self.create_x_window().map_err(|e| mize_err!("From MmeError: {:?}", e)));
         }
 
         #[cfg(feature = "wasm-target")]
@@ -73,9 +73,9 @@ unsafe fn qstring_to_rust(q_string: CppBox<QString>) -> String {
 }
 
 impl Mme {
-    pub fn new() -> MmeResult<Mme> {
+    pub fn new(mize: Instance) -> MmeResult<Mme> {
         let comandr = Comandr::new();
-        Ok(Mme { comandr, hi: "hi inside mme".to_owned() })
+        Ok(Mme { comandr, mize, })
     }
 
     #[cfg(feature = "wasm-target")]
@@ -130,13 +130,16 @@ impl Mme {
             };
 
             //let html_str = fs::read_to_string(format!("{}/../implementors/html/js-runtime/dist/index.html", file!()))?;
-            println!("hooooooooooooooooooooooooooooooooooooo html_str");
             //println!("html_str: {}", html_str);
+
+            // get the path of the js-runtime
+            let mme_module_path = self.mize.fetch_module("mme")?;
+
 
             let _webview = builder
             //.with_url("file:///home/me/work/mme/test.html")
             //.with_url("../implementors/html/js-runtime/dist/index.html")
-            .with_url(format!("file://{}/../implementors/html/js-runtime/dist/index.html", file!()))
+            .with_url(format!("file://{}/js-runtime/dist/index.html", mme_module_path))
             //.with_html(html_str)
             /*
             .with_drag_drop_handler(|e| {

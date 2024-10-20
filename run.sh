@@ -2,6 +2,9 @@
 set -e
 
 # override, where mize loads the mme module from
+export MIZE_MODULE_PATH=/home/me/work/mme:/home/me/work/modules:/home/me/work/presenters
+export MIZE_MODULE_NO_REPO=1
+export MIZE_MODULE_NO_EXTERNALS=1
 export MIZE_CONFIG=$MIZE_CONFIG:module_dir.mme=/home/me/work/modules/modules/mme/dist
 #export MIZE_CONFIG=$MIZE_CONFIG:module_dir.mme=/home/me/work/mize/result
 
@@ -28,6 +31,10 @@ npm run build -- --mode development
 cd /home/me/work/modules/modules/mme
 cargo build --lib
 mkdist
+
+cd /home/me/work/modules/modules/mme/src/implementors/html/js-runtime
+npm run build
+cp -r dist/* /home/me/work/modules/mme/dist/js-runtime
 
 
 # build the String module

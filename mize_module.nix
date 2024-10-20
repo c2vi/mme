@@ -1,10 +1,43 @@
 {
 
 
-module = { mkMizeRustModule, crossSystem, pkgsCross, mkMizeRustShell, pkgs, pkgsNative, ... }: mkMizeRustModule ({
+module = { mkMizeRustModule, crossSystem, pkgsCross, mkMizeRustShell, pkgs, pkgsNative, buildNpmPackage, ... }: let
+
+  jsRuntime = buildNpmPackage {
+    name = "mme-js-runtime";
+
+    src = ./src/implementors/html/js-runtime;
+
+    npmDepsHash = "sha256-mk2kwATZ6j7HT7aO1O9kMzvQ9/R3A378P7yt3WDq3HI=";
+
+    # The prepack script runs the build script, which we'd rather do in the build phase.
+    npmPackFlags = [ 
+      #"--ignore-scripts" 
+      #"--legacy-peer-deps" 
+      #"--loglevel=verbose"
+    ];
+    #makeCacheWritable = true;
+
+    NODE_OPTIONS = "--openssl-legacy-provider";
+
+    installPhase = ''
+      mkdir -p $out/dist
+      cp -r ./dist/* $out/dist
+    '';
+  };
+
+in mkMizeRustModule ({
   modName = "mme";
   src = ./.;
   cargoExtraArgs = "--no-default-features --lib";
+
+  ## add the js-runtimme
+  postInstall = ''
+  mkdir -p $out/js-runtime
+  cp ${jsRuntime}/dist/* $out/js-runtime
+  '';
+
+  inherit jsRuntime;
 }
 
 // (if crossSystem.kernel.name == "linux" then builtins.trace "adding linux stuff" {
@@ -57,22 +90,22 @@ module = { mkMizeRustModule, crossSystem, pkgsCross, mkMizeRustShell, pkgs, pkgs
 
 );
 
-
+# test
 
 
 lib = { mkMizeModule, buildNpmPackage, ... }: rec {
-  mkMmePresenter = attrs: mkMizeModule ({
+  mkMmePresenter = attrs: mkMizeModule (attrs // {
+    src = attrs.src;
+    modName = attrs.name;
     select = {
-      inherit (attrs) name;
-      MmePresenter = true;
+      mme_presenter = true;
     };
-  } // attrs);
+  });
 
   mkMmeNpmPresenter = attrs: buildNpmPackage (attrs // {
   });
 
-  mkMmeHtmlPresenter = attrs: mkMmePresenter {
-    modName = "presenter.${attrs.name}";
+  mkMmeHtmlPresenter = attrs: mkMmePresenter ({
     dontUnpack = true;
     dontPath = true;
     buildPhase = "";
@@ -80,7 +113,7 @@ lib = { mkMizeModule, buildNpmPackage, ... }: rec {
       mkdir -p $out
       cp -r ${attrs.src}/* $out
     '';
-  };
+  } // attrs);
 };
 
 
