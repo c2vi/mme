@@ -1,6 +1,8 @@
 use std::path::{Path, PathBuf};
+use std::sync::Mutex;
+use std::sync::Arc;
 
-use crate::{error::MmeResult, implementors::{html::HtmlPresenter}, presenter};
+use crate::{implementors::{html::HtmlPresenter}, presenter};
 use crate::slot::{Slot, SlotTrait};
 use crate::presenter::Presenter;
 use tracing::info;
@@ -21,32 +23,36 @@ use mize::Instance;
 use mize::mize_err;
 use mize::MizeError;
 
+#[derive(Clone)]
 pub struct Mme {
-    pub comandr: Comandr,
+    pub comandr: Arc<Mutex<Comandr>>,
     pub mize: Instance,
 }
 
 #[no_mangle]
 extern "C" fn get_mize_module_mme(empty_module: &mut Box<dyn Module + Send + Sync>, mize: Instance) -> () {
     let comandr = Comandr::new();
-    let new_box: Box<dyn Module + Send + Sync> = Box::new( Mme { comandr, mize, } );
+    let new_box: Box<dyn Module + Send + Sync> = Box::new( Mme { comandr: Arc::new(Mutex::new(comandr)), mize, } );
 
     *empty_module = new_box
 }
 
 impl Module for Mme {
-    fn init(&mut self, _instance: &mut Instance) -> MizeResult<()> {
+    fn init(&mut self, _instance: &Instance) -> MizeResult<()> {
         println!("MmeModule init");
 
         #[cfg(feature = "os-target")]
         {
-            self.mize.spawn("mme-main", || self.create_x_window().map_err(|e| mize_err!("From MmeError: {:?}", e)));
+            //self.mize.spawn("mme-main", || self.create_x_window());
+            let mut cloned_self = self.clone();
+            self.mize.spawn("mme-main", move || cloned_self.create_x_window());
+            //self.mize.get("0/config")?;
         }
 
         #[cfg(feature = "wasm-target")]
         {
             //ther is no html slots yet
-            //self.create_html_slot().map_err(|e| mize_err!("From MmeError: {:?}", e))
+            //self.create_html_slot().map_err(|e| mize_err!("From mizeError: {:?}", e))
         }
 
         Ok(())
@@ -73,19 +79,19 @@ unsafe fn qstring_to_rust(q_string: CppBox<QString>) -> String {
 }
 
 impl Mme {
-    pub fn new(mize: Instance) -> MmeResult<Mme> {
+    pub fn new(mize: Instance) -> MizeResult<Mme> {
         let comandr = Comandr::new();
-        Ok(Mme { comandr, mize, })
+        Ok(Mme { comandr: Arc::new(Mutex::new(comandr)), mize, })
     }
 
     #[cfg(feature = "wasm-target")]
-    pub fn create_html_slot() -> MmeResult<()> {
+    pub fn create_html_slot() -> MizeResult<()> {
         println!("hi wasm");
         Ok(())
     }
 
     #[cfg(feature = "os-target")]
-    pub fn create_x_window(&self) -> MmeResult<()> {
+    pub fn create_x_window(&mut self) -> MizeResult<()> {
         use std::fs;
 
         use tao::{
@@ -104,94 +110,90 @@ impl Mme {
         #[cfg(target_os = "linux")]
         use webkit2gtk::WebViewExt;
 
-        fn webui() -> wry::Result<()> {
-            let event_loop = EventLoop::new();
-            let window = WindowBuilder::new().build(&event_loop).unwrap();
+        let event_loop = EventLoop::new();
+        let window = WindowBuilder::new().build(&event_loop).unwrap();
 
-            #[cfg(any(
-                target_os = "windows",
-                target_os = "macos",
-                target_os = "ios",
-                target_os = "android"
-            ))]
-            let builder = WebViewBuilder::new(&window);
+        #[cfg(any(
+            target_os = "windows",
+            target_os = "macos",
+            target_os = "ios",
+            target_os = "android"
+        ))]
+        let builder = WebViewBuilder::new(&window);
 
-            #[cfg(not(any(
-                target_os = "windows",
-                target_os = "macos",
-                target_os = "ios",
-                target_os = "android"
-            )))]
-            let builder = {
-                use tao::platform::unix::WindowExtUnix;
-                use wry::WebViewBuilderExtUnix;
-                let vbox = window.default_vbox().unwrap();
-                WebViewBuilder::new_gtk(vbox)
-            };
+        #[cfg(not(any(
+            target_os = "windows",
+            target_os = "macos",
+            target_os = "ios",
+            target_os = "android"
+        )))]
+        let builder = {
+            use tao::platform::unix::WindowExtUnix;
+            use wry::WebViewBuilderExtUnix;
+            let vbox = window.default_vbox().unwrap();
+            WebViewBuilder::new_gtk(vbox)
+        };
 
-            //let html_str = fs::read_to_string(format!("{}/../implementors/html/js-runtime/dist/index.html", file!()))?;
-            //println!("html_str: {}", html_str);
+        //let html_str = fs::read_to_string(format!("{}/../implementors/html/js-runtime/dist/index.html", file!()))?;
+        //println!("html_str: {}", html_str);
 
-            // get the path of the js-runtime
-            let mme_module_path = self.mize.fetch_module("mme")?;
+        // get the path of the js-runtime
+        let mme_module_path = self.mize.fetch_module("mme")?;
 
 
-            let _webview = builder
-            //.with_url("file:///home/me/work/mme/test.html")
-            //.with_url("../implementors/html/js-runtime/dist/index.html")
-            .with_url(format!("file://{}/js-runtime/dist/index.html", mme_module_path))
-            //.with_html(html_str)
-            /*
-            .with_drag_drop_handler(|e| {
-              match e {
-                wry::DragDropEvent::Enter { paths, position } => {
-                  println!("DragEnter: {position:?} {paths:?} ")
-                }
-                wry::DragDropEvent::Over { position } => println!("DragOver: {position:?} "),
-                wry::DragDropEvent::Drop { paths, position } => {
-                  println!("DragDrop: {position:?} {paths:?} ")
-                }
-                wry::DragDropEvent::Leave => println!("DragLeave"),
-                _ => {}
-              }
-
-              true
-            })
-            */
-            .build()?;
-            //_webview.open_devtools();
-
-            #[cfg(target_os = "linux")]
-            {
-                let settings = Settings::builder()
-                    .allow_file_access_from_file_urls(true)
-                    .enable_developer_extras(true)
-                    .build();
-                let __webview = _webview.webview();
-               __webview.set_settings(&settings);
-
-                let inspector = __webview.inspector().expect("no inspector");
-                inspector.show();
+        let _webview = builder
+        //.with_url("file:///home/me/work/mme/test.html")
+        //.with_url("../implementors/html/js-runtime/dist/index.html")
+        .with_url(format!("file://{}/index.html", mme_module_path))
+        //.with_html(html_str)
+        /*
+        .with_drag_drop_handler(|e| {
+          match e {
+            wry::DragDropEvent::Enter { paths, position } => {
+              println!("DragEnter: {position:?} {paths:?} ")
             }
-
-            event_loop.run(move |event, _, control_flow| {
-                *control_flow = ControlFlow::Wait;
-
-            if let Event::WindowEvent {
-                event: WindowEvent::CloseRequested,
-                ..
-            } = event
-            {
-              *control_flow = ControlFlow::Exit
+            wry::DragDropEvent::Over { position } => println!("DragOver: {position:?} "),
+            wry::DragDropEvent::Drop { paths, position } => {
+              println!("DragDrop: {position:?} {paths:?} ")
             }
-            });
+            wry::DragDropEvent::Leave => println!("DragLeave"),
+            _ => {}
+          }
+
+          true
+        })
+        */
+        .build()?;
+        //_webview.open_devtools();
+
+        #[cfg(target_os = "linux")]
+        {
+            let settings = Settings::builder()
+                .allow_file_access_from_file_urls(true)
+                .enable_developer_extras(true)
+                .build();
+            let __webview = _webview.webview();
+           __webview.set_settings(&settings);
+
+            let inspector = __webview.inspector().expect("no inspector");
+            inspector.show();
         }
 
-        Ok(webui()?)
+        event_loop.run(move |event, _, control_flow| {
+            *control_flow = ControlFlow::Wait;
+
+        if let Event::WindowEvent {
+            event: WindowEvent::CloseRequested,
+            ..
+        } = event
+        {
+          *control_flow = ControlFlow::Exit
+        }
+        });
     }
 
     #[cfg(features = "qt")]
-    pub fn create_qt_slot(&self) -> MmeResult<()> {
+    pub fn create_qt_slot(&self) -> MizeResult<()> {
         unsafe {
 
             let backend = i_slint_backend_qt::Backend::new();

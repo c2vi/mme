@@ -1,5 +1,6 @@
-use crate::{error::MmeResult, slot::Slot};
+use crate::slot::Slot;
 
+use mize::MizeResult;
 
 // A Presenter, that takes not data and produces only one output Space
 // with that space being of a different type.
@@ -9,5 +10,5 @@ pub struct Adapter {
 }
 
 pub trait AdapterTrait {
-    fn sub_slot() -> MmeResult<Slot>;
+    fn sub_slot() -> MizeResult<Slot>;
 }

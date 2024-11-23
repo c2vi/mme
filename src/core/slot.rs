@@ -8,15 +8,15 @@ use crate::implementors::qt_widget::QtWidgetSlot;
 
 use crate::implementors::html::HtmlSlot;
 
-use crate::error::MmeResult;
 use crate::presenter::Presenter;
+use mize::MizeResult;
 
 // common behaviour for all SlotTypes
 #[enum_dispatch]
 pub trait SlotTrait {
-    fn load(&mut self, presenter: Presenter) -> MmeResult<()>;
+    fn load(&mut self, presenter: Presenter) -> MizeResult<()>;
 
-    //pub fn load_html(pressenter: HtmlPresenter) -> MmeResult<()> {}
+    //pub fn load_html(pressenter: HtmlPresenter) -> MizeResult<()> {}
 }
 
 // this is the main type of this project

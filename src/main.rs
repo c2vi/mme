@@ -15,8 +15,11 @@ use tracing::Level;
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::filter::EnvFilter;
 use crate::logging::init_logger;
-use mme::error::{MmeResult, MmeError};
-use mme::mme::Mme;
+use mize_module_mme::mme::Mme;
+
+use mize::{mize_err, Instance};
+use mize::MizeResult;
+use mize::MizeError;
 
 use tracing::{trace, debug, info, warn, error};
 //use slint::platform::Platform;
@@ -42,7 +45,7 @@ fn main() {
         //Some(("run", sub_matches)) => cli::run(sub_matches),
         // some unknown command passed
 
-        Some((cmd, sub_matches)) => Err(MmeError::new().msg(format!("The subcommand: {} is not known. use --help to list availavle commands", cmd))),
+        Some((cmd, sub_matches)) => Err(mize_err!("The subcommand: {} is not known. use --help to list availavle commands", cmd)),
 
         None => {
             unsafe { default_cmd() }
@@ -55,8 +58,9 @@ fn main() {
 }
 
 
-fn default_cmd() -> MmeResult<()> {
-    let mme = Mme::new()?;
+fn default_cmd() -> MizeResult<()> {
+    let mize = Instance::new()?;
+    let mut mme = Mme::new(mize)?;
 
     mme.create_x_window()?;
 

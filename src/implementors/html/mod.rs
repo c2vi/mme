@@ -1,10 +1,10 @@
 
 use std::path::PathBuf;
-use crate::error::MmeError;
 use comandr::Comandr;
 
-use crate::{error::MmeResult, slot::SlotTrait};
+use crate::slot::SlotTrait;
 use crate::mme::Mme;
+use mize::MizeResult;
 
 
 
@@ -13,7 +13,7 @@ pub struct HtmlPresenter {
 }
 
 impl HtmlPresenter {
-    pub fn from_folder(path: PathBuf) -> MmeResult<HtmlPresenter> {
+    pub fn from_folder(path: PathBuf) -> MizeResult<HtmlPresenter> {
         Ok(HtmlPresenter { path })
     }
     
@@ -23,7 +23,7 @@ pub struct HtmlSlot {
 }
 
 impl SlotTrait for HtmlSlot {
-    fn load(&mut self,presenter:crate::presenter::Presenter) -> MmeResult<()> {
+    fn load(&mut self,presenter:crate::presenter::Presenter) -> MizeResult<()> {
         Ok(())
     }
 }

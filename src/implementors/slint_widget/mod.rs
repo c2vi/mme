@@ -5,7 +5,7 @@ use slint_interpreter::{ComponentInstance, ComponentDefinition, ComponentCompile
 use crate::presenter::Presenter;
 use crate::slot::SlotTrait;
 use crate::slot::Position;
-use crate::error::MmeResult;
+use mize::MizeResult;
 
 //pub mod qt_backend;
 
@@ -17,11 +17,11 @@ pub struct SlintWidget {
 
 
 impl SlintWidget {
-    fn from_slint_file(path: PathBuf) -> MmeResult<SlintWidget> {
+    fn from_slint_file(path: PathBuf) -> MizeResult<SlintWidget> {
         todo!()
     }
 
-    fn sample() -> MmeResult<SlintWidget> {
+    fn sample() -> MizeResult<SlintWidget> {
 
         let code = r#"
             export component MyWin inherits Window {
@@ -40,7 +40,7 @@ impl SlintWidget {
         return SlintWidget::from_instance(instance);
     }
 
-    fn from_instance(instance: ComponentInstance) -> MmeResult<SlintWidget> {
+    fn from_instance(instance: ComponentInstance) -> MizeResult<SlintWidget> {
         Ok(SlintWidget {
             inner: instance,
         })
@@ -48,7 +48,7 @@ impl SlintWidget {
 }
 
 impl SlotTrait for SlintWidget {
-    fn load(&mut self,presenter:Presenter) -> MmeResult<()> {
+    fn load(&mut self,presenter:Presenter) -> MizeResult<()> {
         todo!()
     }
 }

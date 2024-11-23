@@ -8,14 +8,14 @@ use std::ffi::{CStr, CString};
 
 use crate::presenter::Presenter;
 use crate::slot::{Slot, SlotTrait};
-use crate::error::MmeResult;
+use mize::MizeResult;
 
 
 pub struct HtmlAdapter {
 }
 
 impl HtmlAdapter {
-    pub fn sub_slot(&self) -> MmeResult<Slot> {
+    pub fn sub_slot(&self) -> MizeResult<Slot> {
         todo!()
     }
 }
@@ -25,7 +25,7 @@ pub struct QtWidgetSlot {
 }
 
 impl QtWidgetSlot {
-    pub fn from_widget(widget: QBox<QWidget>) -> MmeResult<QtWidgetSlot> {
+    pub fn from_widget(widget: QBox<QWidget>) -> MizeResult<QtWidgetSlot> {
         Ok(QtWidgetSlot { widget })
     }
 }
@@ -49,7 +49,7 @@ cpp! {{
 }}
 
 impl SlotTrait for QtWidgetSlot {
-    fn load(&mut self, presenter: Presenter) -> MmeResult<()> {
+    fn load(&mut self, presenter: Presenter) -> MizeResult<()> {
         match presenter {
             Presenter::HtmlPresenter(html) => {
                 // here would go the code, to load the index.html of the HtmlPresenter's path into
