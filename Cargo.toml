@@ -13,9 +13,9 @@ wasm-opt = false
 default = [ "os-target" ]
 qt = [ "slint", "cpp", "qt_core", "qt_gui", "qt_widgets", "comandr/qt" ]
 slint = [ "i-slint-backend-qt", "dep:slint", "slint-interpreter", "spin_on", "qt" ]
-os-target = [ "tao", "wry", "tracing-subscriber", "clap", "webkit2gtk" ]
+os-target = [ "tao", "wry", "tracing-subscriber", "clap", "webkit2gtk", "mize/os-target" ]
 #os-target = [ "tao", "wry", "tracing-subscriber", "clap" ]
-wasm-target = [ "wasm-bindgen", "console_error_panic_hook", "wasm-bindgen-cli", "web-sys", "comandr/wasm-target" ]
+wasm-target = [ "wasm-bindgen", "console_error_panic_hook", "wasm-bindgen-cli", "web-sys", "comandr/wasm-target", "mize/wasm-target" ]
 console_error_panic_hook = ["dep:console_error_panic_hook"]
 
 [target.'cfg(unix)'.dependencies]
@@ -25,9 +25,9 @@ webkit2gtk = { version = "2.0.1", optional = true }
 # core deps
 colored = "2.1.0"
 enum_dispatch = "0.3.13"
-comandr = { git = "https://github.com/c2vi/comandr" }
+comandr = { git = "https://github.com/c2vi/comandr", default-features = false }
 #comandr = { path = "../../../dr-comandr" }
-mize = { git = "https://github.com/c2vi/mize" }
+mize = { git = "https://github.com/c2vi/mize", default-features = false }
 tracing = "0.1.40"
 
 # wasm dependencies
