@@ -29,6 +29,8 @@ comandr = { git = "https://github.com/c2vi/comandr", default-features = false }
 #comandr = { path = "../../../dr-comandr" }
 mize = { git = "https://github.com/c2vi/mize", default-features = false }
 tracing = "0.1.40"
+crossbeam = "0.8.4"
+base64 = "0.22.1"
 
 # wasm dependencies
 wasm-bindgen = { version = "0.2.84", optional = true }

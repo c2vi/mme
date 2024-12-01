@@ -1,30 +1,12 @@
 {
 
 
-module = { mkMizeRustModule, crossSystem, pkgsCross, mkMizeRustShell, pkgs, pkgsNative, buildNpmPackage, ... }: let
+module = { buildMizeForSystem, mizeBuildConfig, mkMizeRustModule, crossSystem, pkgsCross, mkMizeRustShell, pkgs, pkgsNative, buildNpmPackage, mkSelString, ... }: let
 
-  jsRuntime = buildNpmPackage {
-    name = "mme-js-runtime";
-
-    src = ./src/implementors/html/js-runtime;
-
-    npmDepsHash = "sha256-mk2kwATZ6j7HT7aO1O9kMzvQ9/R3A378P7yt3WDq3HI=";
-
-    # The prepack script runs the build script, which we'd rather do in the build phase.
-    npmPackFlags = [ 
-      #"--ignore-scripts" 
-      #"--legacy-peer-deps" 
-      #"--loglevel=verbose"
-    ];
-    #makeCacheWritable = true;
-
-    NODE_OPTIONS = "--openssl-legacy-provider";
-
-    installPhase = ''
-      mkdir -p $out/dist
-      cp -r ./dist/* $out/dist
-    '';
+  selector_string = mkSelString {
+    modName = "mme";
   };
+  hash = builtins.substring 0 32 (builtins.hashString "sha256" selector_string);
 
 in mkMizeRustModule ({
   modName = "mme";
@@ -32,12 +14,26 @@ in mkMizeRustModule ({
   cargoExtraArgs = "--no-default-features --lib";
 
   ## add the js-runtimme
-  postInstall = ''
-  mkdir -p $out/js-runtime
-  cp ${jsRuntime}/dist/* $out/js-runtime
+  postInstall = let 
+  url = "file:///home/me/work/mme/dist/mize.js";
+  html = ''
+    <html>
+      <head>
+        <!-- script src="https://c2vi.dev/mize/wasm32-none-unknown/mize.js"></script --!>
+        <script src="${url}"></script>
+        <script>
+          console.log("from script")
+        </script>
+      </head>
+      <body>
+        hello world...............
+      </body>  
+    </html>
+  '';
+  in ''
+    echo -en "${html}" > $out/index.html
   '';
 
-  inherit jsRuntime;
 }
 
 // (if crossSystem.kernel.name == "linux" then builtins.trace "adding linux stuff" {
@@ -48,6 +44,7 @@ in mkMizeRustModule ({
     webkitgtk_4_1
   ];
 } else {})
+
 
 # add the devShell
 // {
@@ -75,7 +72,9 @@ in mkMizeRustModule ({
     shellHook = ''
       echo hiiiiiiiiiiiiii
       export LD_LIBRARY_PATH=${pkgs.webkitgtk_4_1}/lib:${pkgs.libsoup_3}/lib:${pkgs.glib.out}/lib:${pkgs.gtk3}/lib:${pkgs.cairo}/lib:${pkgs.gdk-pixbuf}/lib:${pkgs.libxkbcommon}/lib:${pkgs.fontconfig.lib}/lib:${pkgs.libsForQt5.full}/lib:${pkgs.stdenv.cc.cc.lib}/lib:${pkgs.libsForQt5.qt5.qtwebengine}/lib
+
       export CPLUS_INCLUDE_PATH=${pkgs.libsForQt5.full}/include:${pkgs.libsForQt5.qt5.qtwebengine}/include
+
       export MME_QT_LIB=${pkgs.libsForQt5.full}/lib
 
       # i found that this is the env war to set where QT looks for platform plugins
@@ -90,7 +89,6 @@ in mkMizeRustModule ({
 
 );
 
-# test
 
 
 lib = { mkMizeModule, buildNpmPackage, ... }: rec {

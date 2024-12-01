@@ -6,6 +6,7 @@ use crate::slot::SlotTrait;
 use crate::mme::Mme;
 use mize::MizeResult;
 
+pub mod webview_con;
 
 
 pub struct HtmlPresenter {
@@ -78,6 +79,7 @@ mod wasm {
 
             panic::set_hook(Box::new(console_error_panic_hook::hook));
 
+            /*
             if let Ok(mut mme) = Mme::new() {
                 mme.comandr.init();
                 let mme_comandr_module = Box::new(MmeComandrModule::new());
@@ -88,20 +90,25 @@ mod wasm {
                 console_log!("Mme::new() error");
                 panic!("Mme::new() failed");
             }
+            */
+            panic!("Mme::new() failed");
         }
 
         #[wasm_bindgen]
         pub unsafe fn comandr_search(&mut self, string: String) -> Vec<String> {
-            self.inner.as_mut().comandr.search(string)
+            //self.inner.as_mut().comandr.search(string)
+            Vec::new()
         }
 
         pub unsafe fn comandr_list(&mut self) -> Vec<String> {
-            self.inner.as_mut().comandr.list_commands()
+            //self.inner.as_mut().comandr.list_commands()
+            Vec::new()
         }
 
         #[wasm_bindgen]
         pub unsafe fn comandr_run(&mut self, name: String, args: Vec<String>) -> () {
-            self.inner.as_mut().comandr.execute(name, args)
+            //self.inner.as_mut().comandr.execute(name, args)
+
         }
 
     }

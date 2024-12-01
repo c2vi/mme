@@ -45,8 +45,11 @@ impl Module for Mme {
         {
             //self.mize.spawn("mme-main", || self.create_x_window());
             let mut cloned_self = self.clone();
-            self.mize.spawn("mme-main", move || cloned_self.create_x_window());
-            //self.mize.get("0/config")?;
+            // "significant cross-platform compatibility hazard." xD
+            //self.mize.spawn("mme-main", move || cloned_self.create_x_window());
+            
+            self.create_x_window();
+
         }
 
         #[cfg(feature = "wasm-target")]
@@ -99,7 +102,7 @@ impl Mme {
             event_loop::{ControlFlow, EventLoop},
             window::WindowBuilder,
         };
-        use wry::WebViewBuilder;
+        use wry::{http::{Request, Response}, WebViewBuilder};
 
         #[cfg(target_os = "linux")]
         use wry::WebViewExtUnix;
@@ -141,10 +144,19 @@ impl Mme {
         let mme_module_path = self.mize.fetch_module("mme")?;
 
 
+        // add the mize connection to the instance inside the webview
+        let (tx, rx): (Sender<MizeMessage>, Receiver<MizeMessage>) = crossbeam::channel::unbounded();
+        let conn_id = self.mize.new_connection(tx)?;
+
+
+        let mut self_clone = self.clone();
         let _webview = builder
-        //.with_url("file:///home/me/work/mme/test.html")
+        //.with_url("http://localhost:8000/index.html")
         //.with_url("../implementors/html/js-runtime/dist/index.html")
         .with_url(format!("file://{}/index.html", mme_module_path))
+        .with_ipc_handler(move | res: Request<String> | {
+            crate::implementors::html::webview_con::ipc_handler(res, self_clone.clone(), conn_id)
+        })
         //.with_html(html_str)
         /*
         .with_drag_drop_handler(|e| {
@@ -179,6 +191,11 @@ impl Mme {
             inspector.show();
         }
 
+
+        crate::implementors::html::webview_con::mme_setup_weview_con_host(self, rx, &_webview)?;
+
+
+        // this is where we block the main thread....
         event_loop.run(move |event, _, control_flow| {
             *control_flow = ControlFlow::Wait;
 

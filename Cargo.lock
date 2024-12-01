@@ -3660,6 +3660,7 @@ dependencies = [
 name = "mme"
 version = "0.1.0"
 dependencies = [
+ "base64 0.22.1",
  "cc",
  "clap",
  "colored",
@@ -3667,6 +3668,7 @@ dependencies = [
  "console_error_panic_hook",
  "cpp",
  "cpp_build",
+ "crossbeam",
  "custom-print",
  "enum_dispatch",
  "i-slint-backend-qt",
