@@ -54,6 +54,22 @@ impl Module for Mme {
 
         #[cfg(feature = "wasm-target")]
         {
+            // create mme module object
+            eval("window.mize.mod.mme = {}")?;
+
+            // if we are mme as port of a html_slot inside of an mme... connect to an outer mme
+            let mme_connect_outward = js_sys::eval("window.mme_connect_outward")?.as_bool()?;
+            if mme_connect_outward {
+                eval(r#"
+                "#)?;
+                  
+                // to send stuff out
+                eval(format!("window.ipc.postMessage(\"{}\")", msg_base64))?;
+
+                // when we get stuff, window.mize.mod.mme.msg_recv_fn(msg)
+            }
+
+
             //ther is no html slots yet
             //self.create_html_slot().map_err(|e| mize_err!("From mizeError: {:?}", e))
         }

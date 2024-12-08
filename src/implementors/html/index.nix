@@ -7,6 +7,7 @@
 
       wasm_bindgen().then(() => {
         window.mize = new JsInstance()
+        window.mme_connect_outward = true
         window.mize.load_module("mme")
       });
 
