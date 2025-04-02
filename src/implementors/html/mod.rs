@@ -31,7 +31,7 @@ impl SlotTrait for HtmlSlot {
 
 
 #[cfg(feature = "wasm-target")]
-mod wasm {
+pub mod wasm {
 
     use comandr::Comandr;
     use comandr::Command;
@@ -48,6 +48,8 @@ mod wasm {
 
     // console log
     use wasm_bindgen::prelude::*;
+
+    use super::webview_con::msg_from_string;
     #[wasm_bindgen]
     extern "C" {
         #[wasm_bindgen(js_namespace = console)]
@@ -68,30 +70,27 @@ mod wasm {
 
     #[wasm_bindgen]
     pub struct MmeJs {
-        inner: NonNull<Mme>,
-        //inner: *mut Mme,
+        pub inner: NonNull<Mme>,
+        pub webview_con_id: u64,
     }
 
     #[wasm_bindgen]
     impl MmeJs {
-        #[wasm_bindgen(constructor)]
-        pub fn new() -> MmeJs {
 
-            panic::set_hook(Box::new(console_error_panic_hook::hook));
+        #[wasm_bindgen]
+        pub unsafe fn webview_msg_recv_fn(&mut self, msg_string: String) -> () {
 
-            /*
-            if let Ok(mut mme) = Mme::new() {
-                mme.comandr.init();
-                let mme_comandr_module = Box::new(MmeComandrModule::new());
-                mme.comandr.load_module(mme_comandr_module);
-                let mut mmejs = MmeJs { inner: NonNull::from(Box::leak(Box::new(mme))) };
-                return mmejs;
-            } else {
-                console_log!("Mme::new() error");
-                panic!("Mme::new() failed");
-            }
-            */
-            panic!("Mme::new() failed");
+            let mize = &self.inner.as_mut().mize;
+
+            let msg = match msg_from_string(msg_string, self.webview_con_id) {
+                Ok(val) => val,
+                Err(err) => {
+                    mize.report_err(err.into());
+                    return;
+                },
+            };
+
+            mize.got_msg(msg);
         }
 
         #[wasm_bindgen]
@@ -129,16 +128,10 @@ mod wasm {
         Ok(())
     }
 
-    fn hello() -> ComandrResult<()> {
-        console_log!("hellooooo command");
-        Ok(())
-    }
-
     impl MmeComandrModule {
         pub fn new() -> MmeComandrModule {
             let commands = vec![
                 Command { name: "reload".to_owned(), closure: Box::new(reload_page) },
-                Command { name: "test".to_owned(), closure: Box::new(hello) },
             ];
             MmeComandrModule { commands }
         }

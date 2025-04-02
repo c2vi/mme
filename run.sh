@@ -10,12 +10,16 @@ export MIZE_CONFIG=$MIZE_CONFIG:module_dir.mme=/home/me/work/mme/dist:module_dir
 
 
 # build mme for the browser
+echo '############################# MME for Browser #############################'
 RUST_LOG=off wasm-pack build --target no-modules --dev --out-dir ./dist -- --features wasm-target --no-default-features
 
 
 # build mize for the browser
+echo '############################# mize for Browser #############################'
 cd /home/me/work/mize
 RUST_LOG=off wasm-pack build --target no-modules --dev -- --features wasm-target --no-default-features
+cat /home/me/work/mize/src/platform/wasm/init.js >> /home/me/work/mize/pkg/mize.js
+
 #--out-dir ~/work/mize/src/platform/wasm/npm_pkg/generated
 
 #export CARGO_BUILD_RUSTFLAGS='-C target-feature=+atomics,+bulk-memory,+mutable-globals'
@@ -26,11 +30,13 @@ RUST_LOG=off wasm-pack build --target no-modules --dev -- --features wasm-target
 
 
 # build the mme-js presenter
+echo '############################# mme-js presenter #############################'
 cd /home/me/work/presenters/presenters/mme_js/
 npm run build -- --mode development
 
 
 # build the mme module
+echo '############################# mme module for os #############################'
 cd /home/me/work/mme
 cargo build --lib
 mkdir -p /home/me/work/mme/dist/lib
@@ -39,12 +45,14 @@ nix eval --expr 'import /home/me/work/mme/src/implementors/html/index.nix { mize
 
 
 # build the String module
+echo '############################# string module for os #############################'
 cargo build --manifest-path ~/work/modules/modules/String/Cargo.toml --lib
 mkdir -p /home/me/work/modules/modules/String/dist/lib
 cp /home/me/work/modules/modules/String/target/debug/libmize_module_String.so /home/me/work/modules/modules/String/dist/lib
 
 
 # run mize with gui
+echo '############################# run mize for os #############################'
 cargo run --manifest-path ~/work/mize/Cargo.toml -- gui
 
 

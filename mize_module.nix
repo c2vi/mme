@@ -36,6 +36,14 @@ in mkMizeRustModule ({
 
 }
 
+// (if crossSystem.name == "wasm32-none-unknown" then {
+  mizeBuildPhase = ''
+    cd $build_dir
+    RUST_LOG=off wasm-pack build --target no-modules --dev --out-dir $out -- --features wasm-target --no-default-features
+  '';
+  mizeInstallPhase = "";
+} else {})
+
 // (if crossSystem.kernel.name == "linux" then builtins.trace "adding linux stuff" {
   nativeBuildInputs = with pkgsCross.buildPackages; [
     pkg-config
@@ -91,7 +99,7 @@ in mkMizeRustModule ({
 
 
 
-lib = { mkMizeModule, buildNpmPackage, ... }: rec {
+lib = { mkMizeModule, buildNpmPackage, pkgsCross, pkgsNative, ... }: rec {
   mkMmePresenter = attrs: mkMizeModule (attrs // {
     src = attrs.src;
     modName = attrs.name;
@@ -100,7 +108,26 @@ lib = { mkMizeModule, buildNpmPackage, ... }: rec {
     };
   });
 
-  mkMmeNpmPresenter = attrs: buildNpmPackage (attrs // {
+  mkMmeNpmPresenter = attrs: mkMizeModule (attrs // {
+    drvFunc = buildNpmPackage;
+    mizeBuildPhase = ''
+      cd $build_dir
+      npm i
+      npm run build
+      mv dist tmp
+      mkdir -p $out
+      mv tmp/* $out
+      rm -rf tmp
+    '';
+    mizeInstallPhase = "";
+    select = {
+      mme_presenter = true;
+    };
+
+    devShell = pkgsNative.mkShell {
+      buildInputs = with pkgsNative; [ nodejs_20 ];
+    };
+
   });
 
   mkMmeHtmlPresenter = attrs: mkMmePresenter ({

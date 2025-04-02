@@ -8,7 +8,11 @@ export MIZE_CONFIG=$MIZE_CONFIG:module_dir.mme=/home/me/work/mme/dist:module_dir
 function dev() {
 
 	nix develop /home/me/work/mize#modules.mme --override-input nixpkgs github:nixos/nixpkgs/ea6033ce4ddf2c0ede2ea147a450d4f880796128 --impure
+	#nix develop /home/me/work/mize#modules.mme --impure
 
 }
 
-dev
+if [[ "$1" != "no" ]]
+then
+	dev
+fi

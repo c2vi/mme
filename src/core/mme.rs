@@ -7,21 +7,32 @@ use crate::slot::{Slot, SlotTrait};
 use crate::presenter::Presenter;
 use tracing::info;
 use comandr::Comandr;
+use flume::{ Receiver, Sender };
+use base64::engine::general_purpose::STANDARD;
+use base64::Engine;
 
-#[cfg(features = "os-target")]
-use crate::implementors::qt_widget::QtWidgetSlot;
-#[cfg(features = "os-target")]
+
+#[cfg(feature = "wasm-target")]
+use wasm_bindgen::JsValue;
+#[cfg(feature = "wasm-target")]
+use web_sys::js_sys::Function;
+
+//#[cfg(feature = "os-target")]
+//use crate::implementors::qt_widget::QtWidgetSlot;
+#[cfg(feature = "qt")]
 use qt_core::{qs, QString, QTimer, SlotNoArgs};
-#[cfg(features = "os-target")]
+#[cfg(feature = "qt")]
 use qt_widgets::{QApplication, QGridLayout, QWidget};
-#[cfg(features = "os-target")]
+#[cfg(feature = "qt")]
 use qt_gui::{cpp_core::CppBox};
+
 
 use mize::Module;
 use mize::MizeResult;
 use mize::Instance;
 use mize::mize_err;
 use mize::MizeError;
+use mize::proto::MizeMessage;
 
 #[derive(Clone)]
 pub struct Mme {
@@ -39,6 +50,25 @@ extern "C" fn get_mize_module_mme(empty_module: &mut Box<dyn Module + Send + Syn
 
 impl Module for Mme {
     fn init(&mut self, _instance: &Instance) -> MizeResult<()> {
+
+
+    #[cfg(feature = "wasm-target")]
+    {
+    // console log
+    use wasm_bindgen::prelude::*;
+    #[wasm_bindgen]
+    extern "C" {
+        #[wasm_bindgen(js_namespace = console)]
+        fn log(s: &str);
+    }
+    macro_rules! console_log {
+        // Note that this is using the `log` function imported above during
+        // `bare_bones`
+        ($($t:tt)*) => (log(&format_args!($($t)*).to_string()))
+    }
+    console_log!("mme module inittttttttttttttttttttttt");
+    }
+
         println!("MmeModule init");
 
         #[cfg(feature = "os-target")]
@@ -54,24 +84,22 @@ impl Module for Mme {
 
         #[cfg(feature = "wasm-target")]
         {
+            use web_sys::js_sys::eval;
+            use crate::implementors::html::wasm::MmeJs;
+            use std::ptr::NonNull;
+
             // create mme module object
-            eval("window.mize.mod.mme = {}")?;
+            let mut mme_js = MmeJs {
+                inner: NonNull::from(Box::leak(Box::new(self.clone()))),
+                webview_con_id: 0,
+            };
 
-            // if we are mme as port of a html_slot inside of an mme... connect to an outer mme
-            let mme_connect_outward = js_sys::eval("window.mme_connect_outward")?.as_bool()?;
-            if mme_connect_outward {
-                eval(r#"
-                "#)?;
-                  
-                // to send stuff out
-                eval(format!("window.ipc.postMessage(\"{}\")", msg_base64))?;
+            let func = Function::new_with_args("mme_js", r#"
+                window.mize.mod.mme = mme_js;
+            "#);
+            func.call1(&JsValue::null(), &JsValue::from(mme_js)).map_err(|e| mize_err!("from js error: {:?}", e));
 
-                // when we get stuff, window.mize.mod.mme.msg_recv_fn(msg)
-            }
-
-
-            //ther is no html slots yet
-            //self.create_html_slot().map_err(|e| mize_err!("From mizeError: {:?}", e))
+            // 
         }
 
         Ok(())
@@ -80,6 +108,12 @@ impl Module for Mme {
     fn exit(&mut self, _instance: &Instance) -> MizeResult<()> {
         info!("mme module exit");
         Ok(())
+    }
+
+    fn clone_module(&self) -> Box<dyn Module + Send + Sync> {
+        Box::new(self.clone()
+
+            )
     }
     
 }
@@ -115,7 +149,7 @@ impl Mme {
 
         use tao::{
             event::{Event, WindowEvent},
-            event_loop::{ControlFlow, EventLoop},
+            event_loop::{self, ControlFlow, EventLoop, EventLoopBuilder, EventLoopProxy},
             window::WindowBuilder,
         };
         use wry::{http::{Request, Response}, WebViewBuilder};
@@ -129,7 +163,10 @@ impl Mme {
         #[cfg(target_os = "linux")]
         use webkit2gtk::WebViewExt;
 
-        let event_loop = EventLoop::new();
+        use crate::implementors::html::webview_con::{msg_from_string, msg_to_string};
+
+        let event_loop = EventLoopBuilder::with_user_event().build();
+        let event_loop_proxy: EventLoopProxy<MizeMessage> = event_loop.create_proxy();
         let window = WindowBuilder::new().build(&event_loop).unwrap();
 
         #[cfg(any(
@@ -158,15 +195,16 @@ impl Mme {
 
         // get the path of the js-runtime
         let mme_module_path = self.mize.fetch_module("mme")?;
+        println!("mme module path: {}", mme_module_path);
 
 
         // add the mize connection to the instance inside the webview
-        let (tx, rx): (Sender<MizeMessage>, Receiver<MizeMessage>) = crossbeam::channel::unbounded();
+        let (tx, rx): (Sender<MizeMessage>, Receiver<MizeMessage>) = flume::unbounded();
         let conn_id = self.mize.new_connection(tx)?;
 
 
         let mut self_clone = self.clone();
-        let _webview = builder
+        let webview = builder
         //.with_url("http://localhost:8000/index.html")
         //.with_url("../implementors/html/js-runtime/dist/index.html")
         .with_url(format!("file://{}/index.html", mme_module_path))
@@ -200,7 +238,7 @@ impl Mme {
                 .allow_file_access_from_file_urls(true)
                 .enable_developer_extras(true)
                 .build();
-            let __webview = _webview.webview();
+            let __webview = webview.webview();
            __webview.set_settings(&settings);
 
             let inspector = __webview.inspector().expect("no inspector");
@@ -208,20 +246,33 @@ impl Mme {
         }
 
 
-        crate::implementors::html::webview_con::mme_setup_weview_con_host(self, rx, &_webview)?;
+        crate::implementors::html::webview_con::mme_setup_weview_con_host(self, rx, event_loop_proxy)?;
+        let cloned_self = self.clone();
 
 
         // this is where we block the main thread....
         event_loop.run(move |event, _, control_flow| {
             *control_flow = ControlFlow::Wait;
 
-        if let Event::WindowEvent {
-            event: WindowEvent::CloseRequested,
-            ..
-        } = event
-        {
-          *control_flow = ControlFlow::Exit
-        }
+            match event {
+                Event::WindowEvent { event: WindowEvent::CloseRequested, .. } => {
+                    *control_flow = ControlFlow::Exit
+                },
+
+                Event::UserEvent::<MizeMessage>(msg) => {
+                    match msg_to_string(msg) {
+                        Ok(msg_string) => {
+                            webview.evaluate_script(format!("mize.mod.mme.webview_msg_recv_fn({})", msg_string).as_str());
+                        },
+                        Err(err) => {
+                            cloned_self.mize.report_err(err.into());
+                        },
+                    };
+                },
+
+                _ => {},
+            }
+
         });
     }
 
