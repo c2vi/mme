@@ -1,7 +1,7 @@
 {
 
 
-module = { buildMizeForSystem, mizeBuildConfig, mkMizeRustModule, crossSystem, pkgsCross, mkMizeRustShell, pkgs, pkgsNative, buildNpmPackage, mkSelString, ... }: let
+module = { buildMizeForSystem, mizeBuildConfig, mkMizeRustModule, hostSystem, pkgsCross, mkMizeRustShell, pkgs, pkgsNative, buildNpmPackage, mkSelString, ... }: let
 
   selector_string = mkSelString {
     modName = "mme";
@@ -36,7 +36,8 @@ in mkMizeRustModule ({
 
 }
 
-// (if crossSystem.name == "wasm32-none-unknown" then {
+
+// (if hostSystem.name == "wasm32-none-unknown" then {
   mizeBuildPhase = ''
     cd $build_dir
     RUST_LOG=off wasm-pack build --target no-modules --dev --out-dir $out -- --features wasm-target --no-default-features
@@ -44,7 +45,7 @@ in mkMizeRustModule ({
   mizeInstallPhase = "";
 } else {})
 
-// (if crossSystem.kernel.name == "linux" then builtins.trace "adding linux stuff" {
+// (if hostSystem.kernel.name == "linux" then builtins.trace "adding linux stuff" {
   nativeBuildInputs = with pkgsCross.buildPackages; [
     pkg-config
   ];
