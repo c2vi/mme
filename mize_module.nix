@@ -7,20 +7,12 @@ module = { buildMizeForSystem, mizeBuildConfig, mkMizeRustModule, hostSystem, pk
     modName = "mme";
   };
   hash = builtins.substring 0 32 (builtins.hashString "sha256" selector_string);
-
-in mkMizeRustModule ({
-  modName = "mme";
-  src = ./.;
-  cargoExtraArgs = "--no-default-features --lib";
-
-  ## add the js-runtimme
-  postInstall = let 
   url = "file:///home/me/work/mme/dist/mize.js";
   html = ''
     <html>
       <head>
         <!-- script src="https://c2vi.dev/mize/wasm32-none-unknown/mize.js"></script --!>
-        <script src="${url}"></script>
+        <!-- script src="${url}"></script --!>
         <script>
           console.log("from script")
         </script>
@@ -30,8 +22,15 @@ in mkMizeRustModule ({
       </body>  
     </html>
   '';
-  in ''
-    echo -en "${html}" > $out/index.html
+
+in mkMizeRustModule ({
+  modName = "mme";
+  src = ./.;
+  cargoExtraArgs = "--no-default-features --lib";
+
+  ## add the index.html
+  postInstall = ''
+    echo -n '${html}' > $out/index.html
   '';
 
 }
@@ -41,6 +40,7 @@ in mkMizeRustModule ({
   mizeBuildPhase = ''
     cd $build_dir
     RUST_LOG=off wasm-pack build --target no-modules --dev --out-dir $out -- --features wasm-target --no-default-features
+    echo -n '${html}' > $out/index.html
   '';
   mizeInstallPhase = "";
 } else {})

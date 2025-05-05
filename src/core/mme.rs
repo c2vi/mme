@@ -193,9 +193,15 @@ impl Mme {
         //let html_str = fs::read_to_string(format!("{}/../implementors/html/js-runtime/dist/index.html", file!()))?;
         //println!("html_str: {}", html_str);
 
-        // get the path of the js-runtime
-        let mme_module_path = self.mize.fetch_module("mme")?;
-        println!("mme module path: {}", mme_module_path);
+        // get the path of the index.html
+        let test = self.mize.fetch_module("mme")?;
+        let mme_module_path = self.mize.fetch_module("cross.wasm32-none-unknown.mme")?;
+
+        let mize_module_path = self.mize.fetch_module("cross.wasm32-none-unknown.mize")?;
+
+        let init_script = format!(r#"
+            import("{mize_module_path}/mize.js").then( module => module.init_mize({{module_dir: {{mize: "{mize_module_path}"}}}}))
+        "#);
 
 
         // add the mize connection to the instance inside the webview
@@ -206,8 +212,11 @@ impl Mme {
         let mut self_clone = self.clone();
         let webview = builder
         //.with_url("http://localhost:8000/index.html")
-        //.with_url("../implementors/html/js-runtime/dist/index.html")
+        //.with_url("file:/
+            //home/me/tmp/rd/test.html")
         .with_url(format!("file://{}/index.html", mme_module_path))
+        //.with_html("hello worldddddddddddddddddddddddddddddddddd".to_owned())
+        .with_initialization_script(init_script.as_str())
         .with_ipc_handler(move | res: Request<String> | {
             crate::implementors::html::webview_con::ipc_handler(res, self_clone.clone(), conn_id)
         })
@@ -275,6 +284,7 @@ impl Mme {
 
         });
     }
+
 
     #[cfg(features = "qt")]
     pub fn create_qt_slot(&self) -> MizeResult<()> {

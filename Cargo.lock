@@ -3786,8 +3786,8 @@ dependencies = [
 
 [[package]]
 name = "mize"
-version = "0.0.0"
-source = "git+https://github.com/c2vi/mize#cb9699cef6cb8c97b3dac83e6b20ad7c6cfa6982"
+version = "0.0.1"
+source = "git+https://github.com/c2vi/mize#b035cb625acce1e0aa977a2be84127b520c9eb7d"
 dependencies = [
  "ciborium",
  "ciborium-io",
