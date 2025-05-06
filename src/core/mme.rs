@@ -210,13 +210,31 @@ impl Mme {
 
 
         let mut self_clone = self.clone();
+        let mut self_clone_two = self.clone();
         let webview = builder
         //.with_url("http://localhost:8000/index.html")
         //.with_url("file:/
             //home/me/tmp/rd/test.html")
-        .with_url(format!("file://{}/index.html", mme_module_path))
+        //.with_url(format!("file://{}/index.html", mme_module_path))
         //.with_html("hello worldddddddddddddddddddddddddddddddddd".to_owned())
-        .with_initialization_script(init_script.as_str())
+        //.with_initialization_script(init_script.as_str())
+        .with_custom_protocol(
+          "wry".into(),
+          move | request| match get_wry_response(request, self_clone_two.clone()) {
+            Ok(r) => r.map(Into::into),
+            Err(e) => {
+                println!("get_wry_response error: {}", e);
+                http::Response::builder()
+                    .header(CONTENT_TYPE, "text/plain")
+                    .status(500)
+                    .body(e.to_string().as_bytes().to_vec())
+                    .unwrap()
+                    .map(Into::into)
+            },
+          },
+        )
+        // tell the webview to load the custom protocol
+        .with_url("wry://localhost")
         .with_ipc_handler(move | res: Request<String> | {
             crate::implementors::html::webview_con::ipc_handler(res, self_clone.clone(), conn_id)
         })
@@ -240,6 +258,11 @@ impl Mme {
         */
         .build()?;
         //_webview.open_devtools();
+        println!("{}", webview.url().unwrap());
+        let req = Request::builder()
+              .uri(webview.url().unwrap().to_string())
+              .body("hooooooooooooo")
+              .unwrap();
 
         #[cfg(target_os = "linux")]
         {
@@ -325,5 +348,89 @@ impl Mme {
     }
 }
 
+
+#[cfg(feature = "os-target")]
+use tao::{
+  event::{Event, WindowEvent},
+  event_loop::{ControlFlow, EventLoop},
+  window::WindowBuilder,
+};
+#[cfg(feature = "os-target")]
+use wry::{
+  http::{self, header::CONTENT_TYPE, Request, Response},
+  WebViewBuilder,
+};
+
+#[cfg(feature = "os-target")]
+fn get_wry_response(request: Request<Vec<u8>>, mut mme: Mme) -> Result<http::Response<Vec<u8>>, Box<dyn std::error::Error>> {
+
+
+
+    let mut path = PathBuf::from(request.uri().path());
+
+    let root = if path.starts_with("/modules") {
+        let mod_name = path.iter().nth(2).unwrap().to_str().unwrap();
+        println!("get_wry_response: modname: {}", mod_name);
+        let mod_dir = PathBuf::from(mme.mize.fetch_module(format!("cross.wasm32-none-unknown.{}", mod_name).as_str()).unwrap());
+        mod_dir
+    } else {
+        PathBuf::from(mme.mize.fetch_module("cross.wasm32-none-unknown.mme").unwrap())
+    };
+
+    let index_html = format!(r#"
+        <html>
+          <head>
+            <script>
+              import("/modules/mize/mize.js").then( module => module.init_mize({{module_dir: {{mize: "/modules/mize"}}}}))
+            </script>
+          </head>
+          <body>
+            MME loading...
+          </body>  
+        </html>
+    "#);
+
+    let path = if path == PathBuf::from("/") {
+        // return the index.html
+        return Response::builder()
+            .header(CONTENT_TYPE, "text/html")
+            .body(index_html.into_bytes())
+            .map_err(Into::into);
+
+    } else if path.starts_with("/modules") {
+        path.iter().skip(3).collect()
+    } else {
+        //  removing leading slash
+        let mut string = path.into_os_string().into_string().unwrap();
+        string.remove(0);
+        PathBuf::from(string)
+    };
+
+    println!("root: {}", root.display());
+    println!("path: {}", path.display());
+    let content = std::fs::read(std::fs::canonicalize(root.join(path.as_path()))?)?;
+    let path_str = path.as_os_str().to_str().unwrap();
+
+    // Return asset contents and mime types based on file extentions
+    // If you don't want to do this manually, there are some crates for you.
+    // Such as `infer` and `mime_guess`.
+    let mimetype = if path_str.ends_with(".html") || path == PathBuf::from("/") {
+        "text/html"
+    } else if path_str.ends_with(".js") {
+        "text/javascript"
+    } else if path_str.ends_with(".png") {
+        "image/png"
+    } else if path_str.ends_with(".wasm") {
+        "application/wasm"
+    } else {
+        "text/html"
+    };
+    println!("mimetype: {}", mimetype);
+
+    Response::builder()
+        .header(CONTENT_TYPE, mimetype)
+        .body(content)
+        .map_err(Into::into)
+}
 
 
