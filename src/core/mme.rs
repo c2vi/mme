@@ -29,6 +29,7 @@ use qt_gui::{cpp_core::CppBox};
 
 use mize::Module;
 use mize::MizeResult;
+use mize::error::MizeResultTrait;
 use mize::Instance;
 use mize::mize_err;
 use mize::MizeError;
@@ -152,7 +153,7 @@ impl Mme {
             event_loop::{self, ControlFlow, EventLoop, EventLoopBuilder, EventLoopProxy},
             window::WindowBuilder,
         };
-        use wry::{http::{Request, Response}, WebViewBuilder};
+        use wry::{http::{Method, Request, Response}, WebViewBuilder};
 
         #[cfg(target_os = "linux")]
         use wry::WebViewExtUnix;
@@ -220,24 +221,57 @@ impl Mme {
         //.with_initialization_script(init_script.as_str())
         .with_custom_protocol(
           "wry".into(),
-          move | request| match get_wry_response(request, self_clone_two.clone()) {
-            Ok(r) => r.map(Into::into),
-            Err(e) => {
-                println!("get_wry_response error: {}", e);
-                http::Response::builder()
+          move | request| {
+            
+            // the body will be a mize message as a string
+            if request.method() == &Method::POST {
+                let msg_str = request.headers().get("MizeMsg").unwrap().to_str().unwrap();
+
+                println!("webview_con incoming got msg: {}", msg_str);
+
+                let msg = match msg_from_string(msg_str.to_owned(), conn_id) {
+                    Ok(val) => val,
+                    Err(err) => {
+                        self_clone_two.mize.report_err(err.into());
+                        return http::Response::builder()
+                            .header(CONTENT_TYPE, "text/plain")
+                            .status(500)
+                            .body("".to_string().as_bytes().to_vec())
+                            .unwrap()
+                            .map(Into::into);
+                    },
+                };
+
+                self_clone_two.mize.got_msg(msg);
+
+
+                return http::Response::builder()
                     .header(CONTENT_TYPE, "text/plain")
-                    .status(500)
-                    .body(e.to_string().as_bytes().to_vec())
+                    .status(http::StatusCode::OK)
+                    .body("".to_string().as_bytes().to_vec())
                     .unwrap()
-                    .map(Into::into)
-            },
-          },
+                    .map(Into::into);
+            }
+
+            match get_wry_response(request, self_clone_two.clone()) {
+                Ok(r) => r.map(Into::into),
+                Err(e) => {
+                    println!("get_wry_response error: {}", e);
+                    http::Response::builder()
+                        .header(CONTENT_TYPE, "text/plain")
+                        .status(500)
+                        .body(e.to_string().as_bytes().to_vec())
+                        .unwrap()
+                        .map(Into::into)
+                },
+            }
+          }
         )
         // tell the webview to load the custom protocol
         .with_url("wry://localhost")
-        .with_ipc_handler(move | res: Request<String> | {
-            crate::implementors::html::webview_con::ipc_handler(res, self_clone.clone(), conn_id)
-        })
+        //.with_ipc_handler(move | res: Request<String> | {
+            //crate::implementors::html::webview_con::ipc_handler(res, self_clone.clone(), conn_id)
+        //})
         //.with_html(html_str)
         /*
         .with_drag_drop_handler(|e| {
@@ -363,6 +397,10 @@ use wry::{
 
 #[cfg(feature = "os-target")]
 fn get_wry_response(request: Request<Vec<u8>>, mut mme: Mme) -> Result<http::Response<Vec<u8>>, Box<dyn std::error::Error>> {
+    use comandr::core::module;
+    use mize::item::ItemData;
+    use mize::error::MizeResultTrait;
+
 
 
 
@@ -377,11 +415,26 @@ fn get_wry_response(request: Request<Vec<u8>>, mut mme: Mme) -> Result<http::Res
         PathBuf::from(mme.mize.fetch_module("cross.wasm32-none-unknown.mme").unwrap())
     };
 
+    let mut module_dir_conf: ItemData = mme.mize.get("self/config/module_dir/cross/wasm32-none-unknown").as_std()?.as_data_full().as_std()?;
+    let mut module_dir_str = String::new();
+    if !module_dir_conf.cbor().is_null() {
+        let map = module_dir_conf.cbor().as_map().ok_or(mize_err!("self/config/module_dir was not a map")).as_std()?;
+        for (mod_name, module_dir) in map {
+            let mod_name_str = mod_name.as_text().ok_or(mize_err!("mod_name was not a string")).as_std()?;
+            module_dir_str += format!(r#" "{mod_name_str}": "wry://localhost/modules/{mod_name_str}", "#).as_str();
+        }
+    }
+
+
     let index_html = format!(r#"
         <html>
           <head>
             <script>
-              import("/modules/mize/mize.js").then( module => module.init_mize({{module_dir: {{mize: "/modules/mize"}}}}))
+                import("/modules/mize/mize.js").then( module => module.init_mize({{
+                    module_dir: {{ {module_dir_str} }},
+                    load_modules: "mme",
+                    module_url: "wry://localhost/modules"
+                }}))
             </script>
           </head>
           <body>
