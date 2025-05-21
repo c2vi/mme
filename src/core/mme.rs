@@ -49,6 +49,28 @@ extern "C" fn get_mize_module_mme(empty_module: &mut Box<dyn Module + Send + Syn
     *empty_module = new_box
 }
 
+#[cfg(feature = "wasm-target")]
+use mize::platform::wasm::JsInstance;
+
+#[cfg(feature = "wasm-target")]
+use wasm_bindgen::prelude::*;
+
+#[cfg(feature = "wasm-target")]
+#[wasm_bindgen]
+pub fn wasm_get_mize_module_mme() -> usize {
+    get_mize_module_mme as usize
+}
+/*
+pub fn wasm_get_mize_module_mme(empty_module_ptr: usize, mize: JsInstance) -> usize {
+    let mut empty_module: Box<dyn Module + Send + Sync> = *(empty_module_ptr as Box<Box<dyn Module + Send + Sync>>);
+    let mize = mize.inner().clone();
+    let comandr = Comandr::new();
+    let new_box: Box<dyn Module + Send + Sync> = Box::new( Mme { comandr: Arc::new(Mutex::new(comandr)), mize, } );
+
+    *empty_module = new_box
+}
+*/
+
 impl Module for Mme {
     fn init(&mut self, _instance: &Instance) -> MizeResult<()> {
 

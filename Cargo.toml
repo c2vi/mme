@@ -69,3 +69,8 @@ cpp_build = "0.5"
 [lib]
 name = "mize_module_mme"
 crate-type =["cdylib", "rlib"]
+
+[target.wasm32-unknown-unknown]
+rustflags = [
+  "-C", "link-args=--import-memory",
+]
