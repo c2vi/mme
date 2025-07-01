@@ -10,6 +10,7 @@ use comandr::Comandr;
 use flume::{ Receiver, Sender };
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine;
+use core::ptr::NonNull;
 
 
 #[cfg(feature = "wasm-target")]
@@ -41,8 +42,34 @@ pub struct Mme {
     pub mize: Instance,
 }
 
+
+
+// console_log macro
+// that can be copied into other files for debugging purposes
+#[cfg(feature = "wasm-target")]
+use wasm_bindgen::prelude::*;
+
+#[cfg(feature = "wasm-target")]
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(js_namespace = console)]
+    fn log(s: &str);
+}
+#[cfg(feature = "wasm-target")]
+macro_rules! console_log {
+    // Note that this is using the `log` function imported above during
+    // `bare_bones`
+    ($($t:tt)*) => (unsafe { log(&format_args!($($t)*).to_string())})
+}
+
+
+
+
+
 #[no_mangle]
 extern "C" fn get_mize_module_mme(empty_module: &mut Box<dyn Module + Send + Sync>, mize: Instance) -> () {
+    #[cfg(feature = "wasm-target")]
+    console_log!("hiiiiiiiiiiiiiiii from inside get_mize_module_mme!!!!!!!!!");
     let comandr = Comandr::new();
     let new_box: Box<dyn Module + Send + Sync> = Box::new( Mme { comandr: Arc::new(Mutex::new(comandr)), mize, } );
 
@@ -57,8 +84,29 @@ use wasm_bindgen::prelude::*;
 
 #[cfg(feature = "wasm-target")]
 #[wasm_bindgen]
-pub fn wasm_get_mize_module_mme() -> usize {
-    get_mize_module_mme as usize
+pub unsafe fn wasm_get_mize_module_mme(mut empty_module_ptr: usize, mut mize_ptr: usize) -> () {
+
+    console_log!("hiiiiiiiiiiiiiiiiiiiiiii form wasm_get_mize_module_mme");
+    let empty_module = empty_module_ptr as * mut Box<dyn Module + Send + Sync>;
+    console_log!("here");
+
+    let mize = (*(mize_ptr as * mut Instance)).clone();
+
+    console_log!("here2");
+
+    //(*empty_module).init(&mize);
+
+    console_log!("here3");
+
+    let comandr = Comandr::new();
+    let mut new_box: Box<dyn Module + Send + Sync> = Box::new( Mme { comandr: Arc::new(Mutex::new(comandr)), mize: mize.clone(), } );
+
+    console_log!("before new_box.init()");
+    new_box.init(&mize);
+
+    console_log!("before assignment");
+
+    *empty_module = new_box
 }
 /*
 pub fn wasm_get_mize_module_mme(empty_module_ptr: usize, mize: JsInstance) -> usize {
@@ -134,9 +182,7 @@ impl Module for Mme {
     }
 
     fn clone_module(&self) -> Box<dyn Module + Send + Sync> {
-        Box::new(self.clone()
-
-            )
+        Box::new(self.clone())
     }
     
 }

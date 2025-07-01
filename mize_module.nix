@@ -1,7 +1,7 @@
 {
 
 
-module = { buildMizeForSystem, mizeBuildConfig, mkMizeRustModule, hostSystem, pkgsCross, mkMizeRustShell, pkgs, pkgsNative, buildNpmPackage, mkSelString, ... }: let
+module = { buildMizeForSystem, mizeBuildConfig, mkMizeRustModule, hostSystem, pkgsCross, mkMizeRustShell, pkgs, pkgsNative, buildNpmPackage, mkSelString, mizeBuildConfigStr, fenix, ... }: let
 
   selector_string = mkSelString {
     modName = "mme";
@@ -39,7 +39,8 @@ in mkMizeRustModule ({
 // (if hostSystem.name == "wasm32-none-unknown" then {
   mizeBuildPhase = ''
     cd $build_dir
-    RUST_LOG=off wasm-pack build --target no-modules --dev --out-dir $out -- --features wasm-target --no-default-features
+    RUSTFLAGS="-C link-args=--import-memory" RUST_LOG=off wasm-pack build --target no-modules --dev --out-dir $out -- --features wasm-target --no-default-features
+    echo -n 'export function get_wasm_bindgen() { return wasm_bindgen }' >> $out/mize_module_mme.js
     echo -n '${html}' > $out/index.html
   '';
   mizeInstallPhase = "";
@@ -57,7 +58,7 @@ in mkMizeRustModule ({
 
 # add the devShell
 // {
-  devShell = mkMizeRustShell {
+  devShell = pkgs.mkShell {
     nativeBuildInputs = with pkgs; [
       #emscripten
       wasm-pack
@@ -68,7 +69,16 @@ in mkMizeRustModule ({
       nasm
       pkg-config
       nodejs
+
+      (fenix.packages.${system}.combine [
+        fenix.packages.${system}.targets.wasm32-unknown-unknown.latest.toolchain
+        fenix.packages.${system}.latest.toolchain
+        fenix.packages.${system}.latest.rust-src
+      ])
+
     ];
+
+    MIZE_BUILD_CONFIG = mizeBuildConfigStr;
 
     buildInputs = with pkgs; [
       openssl
